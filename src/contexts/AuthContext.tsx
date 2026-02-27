@@ -8,7 +8,7 @@ interface AuthContextType {
   session: Session | null
   loading: boolean
   authError: string | null
-  signInWithGoogle: () => Promise<void>
+  signInWithOtp: (email: string) => Promise<void>
   signOut: () => Promise<void>
   isPriest: boolean
   isParishioner: boolean
@@ -210,14 +210,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function signInWithGoogle() {
+  async function signInWithOtp(email: string) {
     setAuthError(null)
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
       options: {
-        redirectTo: `${window.location.origin}/calendar`,
-        queryParams: { access_type: 'offline', prompt: 'consent' },
-        scopes: 'openid email profile https://www.googleapis.com/auth/contacts.readonly',
+        emailRedirectTo: `${window.location.origin}/`,
       },
     })
     if (error) throw error
@@ -234,7 +232,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, userProfile, session, loading, authError, signInWithGoogle, signOut, isPriest, isParishioner }}
+      value={{ user, userProfile, session, loading, authError, signInWithOtp, signOut, isPriest, isParishioner }}
     >
       {children}
     </AuthContext.Provider>

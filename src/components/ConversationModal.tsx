@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase, Event, Conversation } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { fetchGoogleContacts, getContactDisplayName, getContactPhoneNumber, GoogleContact } from '../lib/googleContacts'
 
 interface ConversationModalProps {
   event: Event | null
@@ -10,11 +9,9 @@ interface ConversationModalProps {
 }
 
 export default function ConversationModal({ event, onClose, onSuccess }: ConversationModalProps) {
-  const { user, session } = useAuth()
+  const { user } = useAuth()
   const [conversation, setConversation] = useState<Conversation | null>(null)
-  const [googleContacts, setGoogleContacts] = useState<GoogleContact[]>([])
   const [personName, setPersonName] = useState('')
-  const [selectedContactId, setSelectedContactId] = useState<string | null>(null)
   const [phoneNumber, setPhoneNumber] = useState('')
   const [conversationType, setConversationType] = useState('')
   const [privateNotes, setPrivateNotes] = useState('')
@@ -25,36 +22,7 @@ export default function ConversationModal({ event, onClose, onSuccess }: Convers
     if (event) {
       fetchConversation()
     }
-    loadGoogleContacts()
   }, [event])
-
-  async function loadGoogleContacts() {
-    // Note: Supabase stores OAuth tokens in session.provider_token
-    // However, for Google Contacts API, we may need to refresh the token
-    // For now, we'll try to use the provider_token if available
-    // If not available, the app will still work without contacts integration
-    
-    if (!session) {
-      return
-    }
-
-    try {
-      // Try to get the access token from the session
-      // Supabase stores it in provider_token or we can get it from the provider_refresh_token
-      const accessToken = (session as any).provider_token
-      
-      if (!accessToken) {
-        console.warn('Google access token not available in session')
-        return
-      }
-
-      const contacts = await fetchGoogleContacts(accessToken)
-      setGoogleContacts(contacts)
-    } catch (error) {
-      console.error('Failed to load Google contacts:', error)
-      // Silently fail - app should work without contacts
-    }
-  }
 
   async function fetchConversation() {
     if (!event) return
@@ -67,32 +35,18 @@ export default function ConversationModal({ event, onClose, onSuccess }: Convers
         .single()
 
       if (error && error.code !== 'PGRST116') {
-        // PGRST116 is "not found" - that's okay
         throw error
       }
 
       if (data) {
         setConversation(data)
         setPersonName(data.person_name)
-        setSelectedContactId(data.google_contact_id)
         setPhoneNumber(data.phone_number || '')
         setConversationType(data.conversation_type || '')
         setPrivateNotes(data.private_notes || '')
       }
     } catch (error) {
       console.error('Error fetching conversation:', error)
-    }
-  }
-
-  function handleContactSelect(contactId: string) {
-    setSelectedContactId(contactId)
-    const contact = googleContacts.find((c) => c.resourceName === contactId)
-    if (contact) {
-      setPersonName(getContactDisplayName(contact))
-      const phone = getContactPhoneNumber(contact)
-      if (phone) {
-        setPhoneNumber(phone)
-      }
     }
   }
 
@@ -104,7 +58,6 @@ export default function ConversationModal({ event, onClose, onSuccess }: Convers
     try {
       let eventId = event?.id
 
-      // If creating new conversation, create event first
       if (!eventId) {
         const { data: newEvent, error: eventError } = await supabase
           .from('events')
@@ -126,11 +79,10 @@ export default function ConversationModal({ event, onClose, onSuccess }: Convers
         eventId = newEvent.id
       }
 
-      // Upsert conversation
       const conversationData = {
         event_id: eventId,
         person_name: personName.trim(),
-        google_contact_id: selectedContactId,
+        google_contact_id: null,
         phone_number: phoneNumber.trim() || null,
         conversation_type: conversationType.trim() || null,
         private_notes: privateNotes.trim() || null,
@@ -175,33 +127,6 @@ export default function ConversationModal({ event, onClose, onSuccess }: Convers
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {googleContacts.length > 0 && (
-              <div>
-                <label className="block text-lg font-semibold text-gray-700 mb-2">
-                  Select from Google Contacts (optional)
-                </label>
-                <select
-                  value={selectedContactId || ''}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      handleContactSelect(e.target.value)
-                    } else {
-                      setSelectedContactId(null)
-                    }
-                  }}
-                  className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">-- Select contact --</option>
-                  {googleContacts.map((contact) => (
-                    <option key={contact.resourceName} value={contact.resourceName}>
-                      {getContactDisplayName(contact)}
-                      {getContactPhoneNumber(contact) && ` - ${getContactPhoneNumber(contact)}`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
             <div>
               <label className="block text-lg font-semibold text-gray-700 mb-2">Person Name *</label>
               <input
@@ -220,15 +145,9 @@ export default function ConversationModal({ event, onClose, onSuccess }: Convers
                 type="tel"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                readOnly={!!selectedContactId}
-                className={`w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  selectedContactId ? 'bg-gray-100' : ''
-                }`}
+                className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Phone number"
               />
-              {selectedContactId && (
-                <p className="text-sm text-gray-500 mt-1">Read-only (from Google Contacts)</p>
-              )}
             </div>
 
             <div>

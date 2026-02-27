@@ -2,19 +2,120 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
+type Mode = 'login' | 'register' | 'forgot'
+
 export default function Login() {
-  const { user, userProfile, isPriest, signInWithOtp, loading } = useAuth()
+  const { user, userProfile, isPriest, signInWithPassword, signUp, resetPasswordForEmail, loading } = useAuth()
   const navigate = useNavigate()
+  const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
-  const [sending, setSending] = useState(false)
-  const [sent, setSent] = useState(false)
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [name, setName] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [forgotSent, setForgotSent] = useState(false)
+  const [registerSuccess, setRegisterSuccess] = useState(false)
 
   useEffect(() => {
     if (user && userProfile && !loading) {
       navigate(isPriest ? '/calendar' : '/request-booking', { replace: true })
     }
   }, [user, userProfile, isPriest, loading, navigate])
+
+  function clearForm() {
+    setEmail('')
+    setPassword('')
+    setConfirmPassword('')
+    setName('')
+    setError(null)
+  }
+
+  function toLogin() {
+    setMode('login')
+    setForgotSent(false)
+    setRegisterSuccess(false)
+    clearForm()
+  }
+
+  function toRegister() {
+    setMode('register')
+    setForgotSent(false)
+    clearForm()
+  }
+
+  function toForgot() {
+    setMode('forgot')
+    setRegisterSuccess(false)
+    setPassword('')
+    setConfirmPassword('')
+  }
+
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault()
+    if (!email.trim() || !password) return
+
+    try {
+      setError(null)
+      setSubmitting(true)
+      await signInWithPassword(email.trim(), password)
+    } catch (err: unknown) {
+      const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message?: unknown }).message) : ''
+      if (/invalid login credentials|invalid_credentials/i.test(msg)) {
+        setError('Pogrešan e-mail ili lozinka.')
+      } else {
+        setError('Prijava nije uspjela. Molimo pokušajte ponovo.')
+      }
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleRegister(e: React.FormEvent) {
+    e.preventDefault()
+    if (!email.trim() || !password) return
+
+    if (password.length < 6) {
+      setError('Lozinka mora imati najmanje 6 znakova.')
+      return
+    }
+    if (password !== confirmPassword) {
+      setError('Lozinke se ne podudaraju.')
+      return
+    }
+
+    try {
+      setError(null)
+      setSubmitting(true)
+      await signUp(email.trim(), password, name.trim() || undefined)
+      setRegisterSuccess(true)
+    } catch (err: unknown) {
+      const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message?: unknown }).message) : ''
+      if (/user already registered|already been registered/i.test(msg)) {
+        setError('Korisnik s ovom e-mail adresom već postoji. Prijavite se ili koristite zaboravljenu lozinku.')
+      } else {
+        setError('Registracija nije uspjela. Molimo pokušajte ponovo.')
+      }
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleForgot(e: React.FormEvent) {
+    e.preventDefault()
+    if (!email.trim()) return
+
+    try {
+      setError(null)
+      setSubmitting(true)
+      await resetPasswordForEmail(email.trim())
+      setForgotSent(true)
+    } catch (err: unknown) {
+      setError('Slanje linka nije uspjelo. Molimo pokušajte ponovo.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -27,27 +128,11 @@ export default function Login() {
     )
   }
 
-  async function handleSendLink(e: React.FormEvent) {
-    e.preventDefault()
-    if (!email.trim()) return
-
-    try {
-      setError(null)
-      setSending(true)
-      await signInWithOtp(email.trim())
-      setSent(true)
-    } catch {
-      setError('Slanje linka nije uspjelo. Molimo pokušajte ponovo.')
-    } finally {
-      setSending(false)
-    }
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f6f7fa] px-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#f6f7fa] px-4 py-8">
       <div className="w-full max-w-[420px]">
 
-          <div className="bg-white rounded-2xl shadow-[0_4px_32px_rgba(0,0,0,0.08)] border border-slate-200/60 px-6 sm:px-10 py-8 sm:py-10">
+        <div className="bg-white rounded-2xl shadow-[0_4px_32px_rgba(0,0,0,0.08)] border border-slate-200/60 px-6 sm:px-10 py-8 sm:py-10">
 
           <div className="text-center mb-9">
             <div className="flex justify-center mb-5">
@@ -77,7 +162,8 @@ export default function Login() {
             </div>
           )}
 
-          {sent ? (
+          {/* ── Forgot password: success ── */}
+          {mode === 'forgot' && forgotSent ? (
             <div className="text-center">
               <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-emerald-50 flex items-center justify-center">
                 <svg className="w-7 h-7 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -86,17 +172,150 @@ export default function Login() {
               </div>
               <h2 className="text-[17px] font-semibold text-slate-900 mb-2">Provjerite e-mail</h2>
               <p className="text-[13px] text-slate-500 leading-relaxed mb-6">
-                Poslali smo link za prijavu na <strong className="text-slate-700">{email}</strong>. Kliknite na link u e-mailu za pristup kalendaru.
+                Poslali smo link za reset lozinke na <strong className="text-slate-700">{email}</strong>. Kliknite na link u e-mailu za postavljanje nove lozinke.
               </p>
               <button
-                onClick={() => { setSent(false); setEmail(''); setError(null) }}
+                onClick={toLogin}
                 className="text-[13px] font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
               >
-                Pokušaj s drugom adresom
+                Natrag na prijavu
               </button>
             </div>
+          ) : mode === 'forgot' ? (
+            /* ── Forgot password form ── */
+            <form onSubmit={handleForgot} className="space-y-4">
+              <div>
+                <label htmlFor="email-forgot" className="block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">
+                  E-mail adresa
+                </label>
+                <input
+                  id="email-forgot"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoFocus
+                  placeholder="vas@email.com"
+                  className="w-full px-4 py-3 text-[14px] text-slate-800 bg-white border border-slate-300 rounded-xl outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all placeholder:text-slate-300"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={submitting || !email.trim()}
+                className="w-full flex items-center justify-center gap-2.5 px-5 py-3.5 text-[14px] font-medium text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {submitting ? (
+                  <>
+                    <div className="w-4.5 h-4.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    <span>Šalje se…</span>
+                  </>
+                ) : (
+                  'Pošalji link za reset lozinke'
+                )}
+              </button>
+              <button type="button" onClick={toLogin} className="w-full text-[13px] font-medium text-slate-500 hover:text-slate-700 transition-colors">
+                Natrag na prijavu
+              </button>
+            </form>
+          ) : mode === 'register' && registerSuccess ? (
+            /* ── Register success ── */
+            <div className="text-center">
+              <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-emerald-50 flex items-center justify-center">
+                <svg className="w-7 h-7 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-[17px] font-semibold text-slate-900 mb-2">Račun kreiran</h2>
+              <p className="text-[13px] text-slate-500 leading-relaxed mb-6">
+                Možete se sada prijaviti s e-mail adresom <strong className="text-slate-700">{email}</strong> i lozinkom.
+              </p>
+              <button
+                onClick={toLogin}
+                className="text-[14px] font-medium text-white bg-indigo-600 hover:bg-indigo-700 px-5 py-2.5 rounded-xl transition-colors"
+              >
+                Prijavi se
+              </button>
+            </div>
+          ) : mode === 'register' ? (
+            /* ── Register form ── */
+            <form onSubmit={handleRegister} className="space-y-4">
+              <div>
+                <label htmlFor="email-reg" className="block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">
+                  E-mail adresa *
+                </label>
+                <input
+                  id="email-reg"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoFocus
+                  placeholder="vas@email.com"
+                  className="w-full px-4 py-3 text-[14px] text-slate-800 bg-white border border-slate-300 rounded-xl outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all placeholder:text-slate-300"
+                />
+              </div>
+              <div>
+                <label htmlFor="name-reg" className="block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">
+                  Ime <span className="font-normal text-slate-400">(opcionalno)</span>
+                </label>
+                <input
+                  id="name-reg"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Vaše ime"
+                  className="w-full px-4 py-3 text-[14px] text-slate-800 bg-white border border-slate-300 rounded-xl outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all placeholder:text-slate-300"
+                />
+              </div>
+              <div>
+                <label htmlFor="password-reg" className="block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">
+                  Lozinka * <span className="font-normal text-slate-400">(min. 6 znakova)</span>
+                </label>
+                <input
+                  id="password-reg"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                  className="w-full px-4 py-3 text-[14px] text-slate-800 bg-white border border-slate-300 rounded-xl outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all placeholder:text-slate-300"
+                />
+              </div>
+              <div>
+                <label htmlFor="confirm-reg" className="block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">
+                  Potvrdi lozinku *
+                </label>
+                <input
+                  id="confirm-reg"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                  className="w-full px-4 py-3 text-[14px] text-slate-800 bg-white border border-slate-300 rounded-xl outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all placeholder:text-slate-300"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={submitting || !email.trim() || !password || !confirmPassword}
+                className="w-full flex items-center justify-center gap-2.5 px-5 py-3.5 text-[14px] font-medium text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {submitting ? (
+                  <>
+                    <div className="w-4.5 h-4.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    <span>Registrira se…</span>
+                  </>
+                ) : (
+                  'Registriraj se'
+                )}
+              </button>
+              <button type="button" onClick={toLogin} className="w-full text-[13px] font-medium text-slate-500 hover:text-slate-700 transition-colors">
+                Već imate račun? Prijavite se
+              </button>
+            </form>
           ) : (
-            <form onSubmit={handleSendLink} className="space-y-4">
+            /* ── Login form ── */
+            <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label htmlFor="email" className="block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">
                   E-mail adresa
@@ -112,30 +331,44 @@ export default function Login() {
                   className="w-full px-4 py-3 text-[14px] text-slate-800 bg-white border border-slate-300 rounded-xl outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all placeholder:text-slate-300"
                 />
               </div>
-
+              <div>
+                <label htmlFor="password" className="block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">
+                  Lozinka
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                  className="w-full px-4 py-3 text-[14px] text-slate-800 bg-white border border-slate-300 rounded-xl outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all placeholder:text-slate-300"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={toForgot}
+                className="text-[12px] font-medium text-indigo-600 hover:text-indigo-700 transition-colors -mt-1"
+              >
+                Zaboravljena lozinka?
+              </button>
               <button
                 type="submit"
-                disabled={sending || !email.trim()}
+                disabled={submitting || !email.trim() || !password}
                 className="w-full flex items-center justify-center gap-2.5 px-5 py-3.5 text-[14px] font-medium text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {sending ? (
+                {submitting ? (
                   <>
                     <div className="w-4.5 h-4.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                    <span>Šalje se…</span>
+                    <span>Prijavljivanje…</span>
                   </>
                 ) : (
-                  <>
-                    <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <span>Pošalji link za prijavu</span>
-                  </>
+                  'Prijavi se'
                 )}
               </button>
-
-              <p className="text-[12px] text-slate-400 text-center mt-4 leading-relaxed">
-                Unesite e-mail adresu i primite link za prijavu u pastoralni kalendar.
-              </p>
+              <button type="button" onClick={toRegister} className="w-full text-[13px] font-medium text-slate-500 hover:text-slate-700 transition-colors">
+                Nemate račun? Registrirajte se
+              </button>
             </form>
           )}
         </div>

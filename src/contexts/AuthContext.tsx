@@ -8,7 +8,9 @@ interface AuthContextType {
   session: Session | null
   loading: boolean
   authError: string | null
-  signInWithOtp: (email: string) => Promise<void>
+  signInWithPassword: (email: string, password: string) => Promise<void>
+  signUp: (email: string, password: string, name?: string) => Promise<void>
+  resetPasswordForEmail: (email: string) => Promise<void>
   signOut: () => Promise<void>
   isPriest: boolean
   isParishioner: boolean
@@ -210,13 +212,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function signInWithOtp(email: string) {
+  async function signInWithPassword(email: string, password: string) {
     setAuthError(null)
-    const { error } = await supabase.auth.signInWithOtp({
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw error
+  }
+
+  async function signUp(email: string, password: string, name?: string) {
+    setAuthError(null)
+    const { error } = await supabase.auth.signUp({
       email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/`,
-      },
+      password,
+      options: { data: { name: name ?? email.split('@')[0] } },
+    })
+    if (error) throw error
+  }
+
+  async function resetPasswordForEmail(email: string) {
+    setAuthError(null)
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/`,
     })
     if (error) throw error
   }
@@ -232,7 +247,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, userProfile, session, loading, authError, signInWithOtp, signOut, isPriest, isParishioner }}
+      value={{ user, userProfile, session, loading, authError, signInWithPassword, signUp, resetPasswordForEmail, signOut, isPriest, isParishioner }}
     >
       {children}
     </AuthContext.Provider>

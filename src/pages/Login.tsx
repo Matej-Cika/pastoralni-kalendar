@@ -189,7 +189,7 @@ export default function Login() {
                 Poslali smo link za reset lozinke na <strong className="text-slate-700">{email}</strong>. Kliknite na link u e-mailu za postavljanje nove lozinke.
               </p>
               <button
-                onClick={toLogin}
+                onClick={() => toLogin(true)}
                 className="text-[13px] font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
               >
                 Natrag na prijavu
@@ -227,7 +227,7 @@ export default function Login() {
                   'Pošalji link za reset lozinke'
                 )}
               </button>
-              <button type="button" onClick={toLogin} className="w-full text-[13px] font-medium text-slate-500 hover:text-slate-700 transition-colors">
+              <button type="button" onClick={() => toLogin(true)} className="w-full text-[13px] font-medium text-slate-500 hover:text-slate-700 transition-colors">
                 Natrag na prijavu
               </button>
             </form>
@@ -323,7 +323,7 @@ export default function Login() {
                   'Registriraj se'
                 )}
               </button>
-              <button type="button" onClick={toLogin} className="w-full text-[13px] font-medium text-slate-500 hover:text-slate-700 transition-colors">
+              <button type="button" onClick={() => toLogin()} className="w-full text-[13px] font-medium text-slate-500 hover:text-slate-700 transition-colors">
                 Već imate račun? Prijavite se
               </button>
             </form>

@@ -223,38 +223,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthError(null)
     const trimmedEmail = email.trim()
     const nameVal = name ?? trimmedEmail.split('@')[0]
-    // Edge Function create-user kreira korisnika s email_confirm: true – odmah može prijaviti se.
-    const { data, error } = await supabase.functions.invoke('create-user', {
-      body: { email: trimmedEmail, password, name: nameVal },
-    })
-    const body = (data as { error?: string; message?: string; ok?: boolean }) ?? {}
-    const isUserExists = body?.error === 'USER_EXISTS' || (body?.error ?? '').toLowerCase().includes('već postoji')
-    if (isUserExists) {
-      const err = new Error('Korisnik s ovom e-mail adresom već postoji. Prijavite se ispod.') as Error & { code?: string }
-      err.code = 'user_already_exists'
-      throw err
-    }
-    if (!error && body?.ok) {
-      const { error: signInErr } = await supabase.auth.signInWithPassword({ email: trimmedEmail, password })
-      if (signInErr) throw signInErr
-      return
-    }
-    // Fallback: klasični signUp ako Edge Function nije deployan (radi samo uz "Confirm email" isključen)
-    const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: trimmedEmail,
       password,
       options: { data: { name: nameVal } },
     })
-    if (signUpErr) {
-      if (signUpErr.message?.toLowerCase().includes('already') || (signUpErr as { code?: string }).code === 'user_already_exists') {
+    if (error) {
+      const code = (error as { code?: string }).code ?? ''
+      const msg = (error.message ?? '').toLowerCase()
+      if (code === 'user_already_exists' || msg.includes('already') || msg.includes('exists') || msg.includes('registered')) {
         const err = new Error('Korisnik s ovom e-mail adresom već postoji. Prijavite se ispod.') as Error & { code?: string }
         err.code = 'user_already_exists'
         throw err
       }
-      throw signUpErr
+      throw error
     }
-    if (signUpData.session) return
-    throw new Error('Registracija zahtijeva Edge Function create-user. Deployajte: supabase functions deploy create-user')
+    if (data.session) {
+      return
+    }
+    throw new Error('NEEDS_CONFIRM')
   }
 
   async function resetPasswordForEmail(email: string) {

@@ -45,7 +45,7 @@ Run the SQL migration file in your Supabase SQL editor to create all necessary t
 
 ## Auth Configuration (Supabase)
 
-Prijava koristi **e-mail + lozinka**. Nema potrebe za ručnom potvrdom – Edge Function `create-user` kreira korisnike s automatskom potvrdom.
+Prijava koristi **e-mail + lozinka**.
 
-1. **Obavezno deployati Edge Function**: `supabase functions deploy create-user` (vidi `supabase/EDGE_FUNCTIONS_DEPLOY.md`)
+1. **Authentication → Providers → Email**: **Isključite "Confirm email"** – inače korisnici moraju potvrditi e-mail prije prijave.
 2. **URL Configuration** (za Zaboravljena lozinka): Dodajte `http://localhost:5173` i produkcijsku URL u Redirect URLs.

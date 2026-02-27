@@ -15,6 +15,7 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [forgotSent, setForgotSent] = useState(false)
+  const [needsConfirm, setNeedsConfirm] = useState(false)
   const [isRecovery, setIsRecovery] = useState(() => typeof window !== 'undefined' && window.location.hash.includes('type=recovery'))
   const [newPassword, setNewPassword] = useState('')
   const [confirmNewPassword, setConfirmNewPassword] = useState('')
@@ -29,6 +30,7 @@ export default function Login() {
     setMode(m)
     setError(null)
     setForgotSent(false)
+    setNeedsConfirm(false)
     if (m !== 'forgot') setConfirmPassword('')
   }
 
@@ -68,9 +70,9 @@ export default function Login() {
     }
     try {
       setError(null)
+      setNeedsConfirm(false)
       setSubmitting(true)
       await signUp(email.trim(), password, name.trim() || undefined)
-      // S obzirom da je "Confirm email" isključen u Supabaseu, korisnik će biti odmah prijavljen i preusmjeren
     } catch (err: unknown) {
       const obj = err && typeof err === 'object' ? (err as { message?: unknown; code?: unknown }) : {}
       const code = String((obj as { code?: unknown }).code ?? '')
@@ -78,6 +80,8 @@ export default function Login() {
       if (code === 'user_already_exists' || code === 'email_exists' || /already exists|already registered|email_exists/i.test(msg)) {
         setError('Korisnik s ovom e-mail adresom već postoji. Prijavite se ispod.')
         setMode('login')
+      } else if (msg === 'NEEDS_CONFIRM') {
+        setNeedsConfirm(true)
       } else {
         setError('Registracija nije uspjela. Pokušajte ponovo.')
       }
@@ -221,6 +225,19 @@ export default function Login() {
                 Natrag na prijavu
               </button>
             </form>
+          ) : mode === 'register' && needsConfirm ? (
+            <div className="text-center py-2">
+              <h2 className="text-[16px] font-semibold text-slate-900 mb-2">Provjerite e-mail</h2>
+              <p className="text-[13px] text-slate-500 mb-4">
+                Poslali smo link za potvrdu na <strong>{email}</strong>. Kliknite na link, zatim se vratite ovdje i prijavite.
+              </p>
+              <p className="text-[12px] text-slate-400 mb-6">
+                Za prijavu odmah bez potvrde, u Supabase Dashboardu isključite „Confirm email” (Authentication → Providers → Email).
+              </p>
+              <button type="button" onClick={() => setModeAndClear('login')} className="text-[14px] font-medium text-indigo-600 hover:text-indigo-700">
+                Natrag na prijavu
+              </button>
+            </div>
           ) : mode === 'register' ? (
             <form onSubmit={handleRegister} className="space-y-4">
               <div>

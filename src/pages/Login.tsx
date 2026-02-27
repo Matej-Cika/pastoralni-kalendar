@@ -31,11 +31,17 @@ export default function Login() {
     setError(null)
   }
 
-  function toLogin() {
+  function toLogin(preserveEmail = false, preserveError = false) {
     setMode('login')
     setForgotSent(false)
     setRegisterSuccess(false)
-    clearForm()
+    if (!preserveEmail) clearForm()
+    else {
+      setPassword('')
+      setConfirmPassword('')
+      setName('')
+      if (!preserveError) setError(null)
+    }
   }
 
   function toRegister() {
@@ -60,8 +66,12 @@ export default function Login() {
       setSubmitting(true)
       await signInWithPassword(email.trim(), password)
     } catch (err: unknown) {
-      const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message?: unknown }).message) : ''
-      if (/invalid login credentials|invalid_credentials/i.test(msg)) {
+      const obj = err && typeof err === 'object' ? (err as { message?: unknown; code?: unknown }) : {}
+      const msg = String(obj.message ?? '')
+      const code = String(obj.code ?? '')
+      if (code === 'email_not_confirmed' || /email not confirmed|email_not_confirmed|confirm your email/i.test(msg)) {
+        setError('Molimo potvrdite svoju e-mail adresu putem linka koji smo vam poslali prilikom registracije.')
+      } else if (code === 'invalid_credentials' || /invalid login credentials|invalid_credentials/i.test(msg)) {
         setError('Pogrešan e-mail ili lozinka.')
       } else {
         setError('Prijava nije uspjela. Molimo pokušajte ponovo.')
@@ -90,9 +100,13 @@ export default function Login() {
       await signUp(email.trim(), password, name.trim() || undefined)
       setRegisterSuccess(true)
     } catch (err: unknown) {
-      const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message?: unknown }).message) : ''
-      if (/user already registered|already been registered/i.test(msg)) {
-        setError('Korisnik s ovom e-mail adresom već postoji. Prijavite se ili koristite zaboravljenu lozinku.')
+      const obj = err && typeof err === 'object' ? (err as { message?: unknown; code?: unknown }) : {}
+      const msg = String(obj.message ?? '')
+      const code = String(obj.code ?? '')
+      if (code === 'user_already_exists' || code === 'email_exists' || /user already registered|already been registered|already exists|duplicate/i.test(msg)) {
+        setError('Korisnik s ovom e-mail adresom već postoji. Prijavite se ispod ili koristite zaboravljenu lozinku.')
+        setRegisterSuccess(false)
+        toLogin(true, true)
       } else {
         setError('Registracija nije uspjela. Molimo pokušajte ponovo.')
       }
@@ -230,7 +244,7 @@ export default function Login() {
                 Možete se sada prijaviti s e-mail adresom <strong className="text-slate-700">{email}</strong> i lozinkom.
               </p>
               <button
-                onClick={toLogin}
+                onClick={() => toLogin(true)}
                 className="text-[14px] font-medium text-white bg-indigo-600 hover:bg-indigo-700 px-5 py-2.5 rounded-xl transition-colors"
               >
                 Prijavi se

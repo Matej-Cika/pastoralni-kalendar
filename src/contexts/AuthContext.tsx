@@ -9,7 +9,7 @@ interface AuthContextType {
   loading: boolean
   authError: string | null
   signInWithPassword: (email: string, password: string) => Promise<void>
-  signUp: (email: string, password: string, name?: string) => Promise<void>
+  signUp: (email: string, password: string, name?: string) => Promise<{ needsEmailConfirmation: boolean }>
   resetPasswordForEmail: (email: string) => Promise<void>
   signOut: () => Promise<void>
   isPriest: boolean
@@ -218,14 +218,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error
   }
 
-  async function signUp(email: string, password: string, name?: string) {
+  async function signUp(email: string, password: string, name?: string): Promise<{ needsEmailConfirmation: boolean }> {
     setAuthError(null)
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { name: name ?? email.split('@')[0] } },
     })
     if (error) throw error
+    // No session = Supabase requires email confirmation; user must click link before signing in
+    const needsEmailConfirmation = !data.session && !!data.user
+    return { needsEmailConfirmation }
   }
 
   async function resetPasswordForEmail(email: string) {

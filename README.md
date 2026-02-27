@@ -43,3 +43,8 @@ npm run dev
 ## Database Setup
 
 Run the SQL migration file in your Supabase SQL editor to create all necessary tables, enums, and RLS policies.
+
+## Auth Configuration (Supabase)
+
+- **Confirm email**: By default, Supabase requires new users to confirm their email before signing in. The app shows "Provjerite e-mail" after registration.
+- **Za prijavu bez potvrde**: U Supabase Dashboardu → Authentication → Providers → Email isključite "Confirm email" ako želite da se korisnici mogu prijaviti odmah nakon registracije.

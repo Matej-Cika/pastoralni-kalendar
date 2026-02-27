@@ -16,6 +16,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null)
   const [forgotSent, setForgotSent] = useState(false)
   const [registerSuccess, setRegisterSuccess] = useState(false)
+  const [needsEmailConfirmation, setNeedsEmailConfirmation] = useState(false)
 
   useEffect(() => {
     if (user && userProfile && !loading) {
@@ -35,6 +36,7 @@ export default function Login() {
     setMode('login')
     setForgotSent(false)
     setRegisterSuccess(false)
+    setNeedsEmailConfirmation(false)
     if (!preserveEmail) clearForm()
     else {
       setPassword('')
@@ -97,7 +99,8 @@ export default function Login() {
     try {
       setError(null)
       setSubmitting(true)
-      await signUp(email.trim(), password, name.trim() || undefined)
+      const { needsEmailConfirmation: needsConfirm } = await signUp(email.trim(), password, name.trim() || undefined)
+      setNeedsEmailConfirmation(needsConfirm)
       setRegisterSuccess(true)
     } catch (err: unknown) {
       const obj = err && typeof err === 'object' ? (err as { message?: unknown; code?: unknown }) : {}
@@ -239,9 +242,20 @@ export default function Login() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h2 className="text-[17px] font-semibold text-slate-900 mb-2">Račun kreiran</h2>
+              <h2 className="text-[17px] font-semibold text-slate-900 mb-2">
+                {needsEmailConfirmation ? 'Provjerite e-mail' : 'Račun kreiran'}
+              </h2>
               <p className="text-[13px] text-slate-500 leading-relaxed mb-6">
-                Možete se sada prijaviti s e-mail adresom <strong className="text-slate-700">{email}</strong> i lozinkom.
+                {needsEmailConfirmation ? (
+                  <>
+                    Poslali smo link za potvrdu računa na <strong className="text-slate-700">{email}</strong>.
+                    Kliknite na link u e-mailu da potvrdite račun, zatim se vratite ovdje i prijavite.
+                  </>
+                ) : (
+                  <>
+                    Možete se sada prijaviti s e-mail adresom <strong className="text-slate-700">{email}</strong> i lozinkom.
+                  </>
+                )}
               </p>
               <button
                 onClick={() => toLogin(true)}

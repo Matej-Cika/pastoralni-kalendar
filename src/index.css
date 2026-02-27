@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --devotion-bg: #f0effe;
+  --devotion-border: #c4b8fa;
+  --devotion-accent: #6d4fe7;
+  --devotion-text: #3b1fa8;
+
+  --activity-bg: #ecfaf4;
+  --activity-border: #a7e6c8;
+  --activity-accent: #16a86b;
+  --activity-text: #0a5c3a;
+
+  --sacrament-bg: #fdf8ec;
+  --sacrament-border: #e8c97a;
+  --sacrament-accent: #b8860b;
+  --sacrament-text: #7a5600;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f6f7fa;
+  color: #1a1d23;
+  line-height: 1.6;
+}
+
+/* Scrollbar refinement */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #c5c5c5;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a0a0a0;
+}
+
+/* Calendar table alignment - the core fix */
+.pastoral-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.pastoral-table colgroup col:nth-child(1) {
+  width: 140px;
+}
+.pastoral-table colgroup col:nth-child(n+2) {
+  width: calc((100% - 140px) / 3);
+}
+
+.pastoral-table th,
+.pastoral-table td {
+  overflow: hidden;
+  vertical-align: top;
+}
+
+/* Smooth transitions */
+.cell-hover {
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}

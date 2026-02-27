@@ -1,0 +1,19 @@
+# Supabase project configuration
+# See: https://supabase.com/docs/guides/local-development/managing-config
+
+# ── Edge Functions: disable JWT verification ─────────────────
+# These notification functions are invoked from the frontend but may receive
+# 401 Invalid JWT when the session/JWT has issues. They use service role
+# internally and validate bookingId in the body, so verify_jwt = false is safe.
+#
+# Deploy with: supabase functions deploy <name>
+# Or via Dashboard: disable "Enforce JWT verification" in function settings.
+
+[functions.notify-priest-new-booking]
+verify_jwt = false
+
+[functions.notify-priest-cancellation]
+verify_jwt = false
+
+[functions.notify-parishioner-cancellation]
+verify_jwt = false

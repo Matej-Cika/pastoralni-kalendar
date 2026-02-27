@@ -186,9 +186,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function autoCreateUserProfile(userId: string, userEmail: string, isMounted: () => boolean) {
+  async function autoCreateUserProfile(supabaseUser: SupabaseUser, isMounted: () => boolean) {
+    const userEmail = supabaseUser.email ?? ''
     const role = getRoleFromEmail(userEmail)
-    const name = userEmail.split('@')[0]
+    const metaName = supabaseUser.user_metadata?.name
+    const name = (typeof metaName === 'string' && metaName.trim()) ? metaName.trim() : userEmail.split('@')[0]
 
     try {
       const result = await runWithTimeout(

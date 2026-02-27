@@ -9,21 +9,16 @@ interface CreateEventModalProps {
 }
 
 const EVENT_TYPES: { value: EventType; label: string; color: string }[] = [
-  { value: 'LITURGY_FEAST', label: 'Liturgy Feast', color: '#FF6B6B' },
-  { value: 'SOLEMNITY', label: 'Solemnity', color: '#4ECDC4' },
-  { value: 'MASS', label: 'Mass', color: '#45B7D1' },
-  { value: 'DEVOTION', label: 'Devotion', color: '#96CEB4' },
-  { value: 'MEETING', label: 'Meeting', color: '#FFEAA7' },
-  { value: 'CONVERSATION', label: 'Conversation', color: '#DDA0DD' },
-  { value: 'ADMINISTRATIVE', label: 'Administrative', color: '#98D8C8' },
-  { value: 'PERSONAL', label: 'Personal', color: '#F7DC6F' },
+  { value: 'POBOZNOST', label: 'Pobožnost', color: '#6366f1' },
+  { value: 'AKTIVNOST', label: 'Aktivnost', color: '#10b981' },
+  { value: 'SAKRAMENT', label: 'Sakrament', color: '#f59e0b' },
 ]
 
 export default function CreateEventModal({ onClose, onSuccess, initialDate }: CreateEventModalProps) {
   const { user } = useAuth()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [eventType, setEventType] = useState<EventType>('MEETING')
+  const [eventType, setEventType] = useState<EventType>('AKTIVNOST')
   const [startDate, setStartDate] = useState(
     initialDate ? initialDate.toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16)
   )

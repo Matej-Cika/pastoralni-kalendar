@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { supabase, Event, EventType } from '../lib/supabase'
+import { useState } from 'react'
+import { supabase, Event, EventType, toEventCategory } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 
 interface EditEventModalProps {
@@ -9,21 +9,16 @@ interface EditEventModalProps {
 }
 
 const EVENT_TYPES: { value: EventType; label: string; color: string }[] = [
-  { value: 'LITURGY_FEAST', label: 'Liturgy Feast', color: '#FF6B6B' },
-  { value: 'SOLEMNITY', label: 'Solemnity', color: '#4ECDC4' },
-  { value: 'MASS', label: 'Mass', color: '#45B7D1' },
-  { value: 'DEVOTION', label: 'Devotion', color: '#96CEB4' },
-  { value: 'MEETING', label: 'Meeting', color: '#FFEAA7' },
-  { value: 'CONVERSATION', label: 'Conversation', color: '#DDA0DD' },
-  { value: 'ADMINISTRATIVE', label: 'Administrative', color: '#98D8C8' },
-  { value: 'PERSONAL', label: 'Personal', color: '#F7DC6F' },
+  { value: 'POBOZNOST', label: 'Pobožnost', color: '#6366f1' },
+  { value: 'AKTIVNOST', label: 'Aktivnost', color: '#10b981' },
+  { value: 'SAKRAMENT', label: 'Sakrament', color: '#f59e0b' },
 ]
 
 export default function EditEventModal({ event, onClose, onSuccess }: EditEventModalProps) {
   const { user } = useAuth()
   const [title, setTitle] = useState(event.title)
   const [description, setDescription] = useState(event.description || '')
-  const [eventType, setEventType] = useState<EventType>(event.event_type)
+  const [eventType, setEventType] = useState<EventType>(toEventCategory(event.event_type))
   const [startDate, setStartDate] = useState(new Date(event.start_time).toISOString().slice(0, 16))
   const [endDate, setEndDate] = useState(new Date(event.end_time).toISOString().slice(0, 16))
   const [isPrivate, setIsPrivate] = useState(event.is_private)

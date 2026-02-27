@@ -20,21 +20,21 @@ interface CellEntryModalProps {
 }
 
 const CATEGORY_LABELS: Record<EventCategory, string> = {
-  DEVOTION: 'Pobožnosti',
-  ACTIVITY: 'Aktivnosti',
-  SACRAMENT: 'Sakramenti',
+  POBOZNOST: 'Pobožnosti',
+  AKTIVNOST: 'Aktivnosti',
+  SAKRAMENT: 'Sakramenti',
 }
 
 const PLACEHOLDERS: Record<EventCategory, string> = {
-  DEVOTION: 'npr. Euharistijsko klanjanje, Srijeda Sv.Josipu, trodnevnice…',
-  ACTIVITY: 'npr. Pohod obitelji, Pastoralni razgovor…',
-  SACRAMENT: 'npr. Sveta misa, Krštenje, Vjenčanje, Ispovijed…',
+  POBOZNOST: 'npr. Euharistijsko klanjanje, Srijeda Sv.Josipu, trodnevnice…',
+  AKTIVNOST: 'npr. Pohod obitelji, Pastoralni razgovor…',
+  SAKRAMENT: 'npr. Sveta misa, Krštenje, Vjenčanje, Ispovijed…',
 }
 
 const ACCENT: Record<EventCategory, { ring: string; btn: string }> = {
-  DEVOTION: { ring: '#a78bfa', btn: 'bg-violet-600 hover:bg-violet-700' },
-  ACTIVITY: { ring: '#6ee7b7', btn: 'bg-emerald-600 hover:bg-emerald-700' },
-  SACRAMENT: { ring: '#fcd34d', btn: 'bg-amber-600 hover:bg-amber-700' },
+  POBOZNOST: { ring: '#a78bfa', btn: 'bg-violet-600 hover:bg-violet-700' },
+  AKTIVNOST: { ring: '#6ee7b7', btn: 'bg-emerald-600 hover:bg-emerald-700' },
+  SAKRAMENT: { ring: '#fcd34d', btn: 'bg-amber-600 hover:bg-amber-700' },
 }
 
 const HR_MONTHS: Record<number, string> = {
@@ -144,9 +144,9 @@ export default function CellEntryModal({ date, category, existingEvents, onClose
   }
 
   const COLORS: Record<EventCategory, string> = {
-    DEVOTION: '#7c3aed',
-    ACTIVITY: '#16a34a',
-    SACRAMENT: '#b45309',
+    POBOZNOST: '#7c3aed',
+    AKTIVNOST: '#16a34a',
+    SAKRAMENT: '#b45309',
   }
 
   async function handleSave() {

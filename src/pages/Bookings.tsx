@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { supabase, Booking, BookingStatus, BookingNote, User } from '../lib/supabase'
+import { supabase, Booking, BookingStatus, User } from '../lib/supabase'
 import Navigation from '../components/Navigation'
 
 // ── Locale ────────────────────────────────────────────────
@@ -562,7 +562,7 @@ export default function Bookings() {
               description: booking.purpose || null,
               start_time: new Date(`${slot.date}T${booking.requested_start_time}:00`).toISOString(),
               end_time:   new Date(`${slot.date}T${booking.requested_end_time}:00`).toISOString(),
-              event_type: 'ACTIVITY',
+              event_type: 'AKTIVNOST',
               color:      '#16a34a',
               is_private: true,
               created_by: userProfile.id,

@@ -21,8 +21,7 @@ const HR_MONTHS_SHORT: Record<number, string> = {
   4: 'svi.', 5: 'lip.',  6: 'srp.', 7: 'kol.',
   8: 'ruj.', 9: 'lis.', 10: 'stu.', 11: 'pro.',
 }
-const HR_WEEKDAYS_FULL  = ['Nedjelja','Ponedjeljak','Utorak','Srijeda','Četvrtak','Petak','Subota']
-const HR_WEEKDAYS_SHORT = ['Ned','Pon','Uto','Sri','Čet','Pet','Sub']
+const HR_WEEKDAYS_FULL = ['Nedjelja','Ponedjeljak','Utorak','Srijeda','Četvrtak','Petak','Subota']
 
 function isoDate(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
@@ -75,15 +74,15 @@ function bestDefault(dates: Date[]): Date | null {
 
 // ── Category styling ───────────────────────────────────────
 const CAT_COLORS: Record<EventCategory, { bg:string; border:string; text:string; dot:string }> = {
-  SACRAMENT: { bg:'#fef3c7', border:'#fcd34d', text:'#92400e', dot:'#b45309' },
-  DEVOTION:  { bg:'#ede9fe', border:'#c4b5fd', text:'#5b21b6', dot:'#7c3aed' },
-  ACTIVITY:  { bg:'#dcfce7', border:'#86efac', text:'#15803d', dot:'#16a34a' },
+  SAKRAMENT: { bg:'#fef3c7', border:'#fcd34d', text:'#92400e', dot:'#b45309' },
+  POBOZNOST: { bg:'#ede9fe', border:'#c4b5fd', text:'#5b21b6', dot:'#7c3aed' },
+  AKTIVNOST: { bg:'#dcfce7', border:'#86efac', text:'#15803d', dot:'#16a34a' },
 }
 const CAT_HR: Record<EventCategory, string> = {
-  SACRAMENT:'Sakrament', DEVOTION:'Pobožnost', ACTIVITY:'Aktivnost',
+  SAKRAMENT:'Sakrament', POBOZNOST:'Pobožnost', AKTIVNOST:'Aktivnost',
 }
 const CAT_COLORS_DB: Record<EventCategory, string> = {
-  SACRAMENT:'#b45309', DEVOTION:'#7c3aed', ACTIVITY:'#16a34a',
+  SAKRAMENT:'#b45309', POBOZNOST:'#7c3aed', AKTIVNOST:'#16a34a',
 }
 
 // ── Modal state ────────────────────────────────────────────
@@ -120,7 +119,7 @@ export default function QuickAddPanel({ onEventsChanged, onMonthChange, currentM
   function openWeekdayMass(time: string) {
     const best = bestDefault(weekdays)
     setModal({
-      kind: 'weekday-mass', title: 'Sveta misa', category: 'SACRAMENT',
+      kind: 'weekday-mass', title: 'Sveta misa', category: 'SAKRAMENT',
       fixedTime: time, availableDates: weekdays,
       selectedDayIso: best ? isoDate(best) : '',
       customTime: '', note: '', saving: false, error: null,
@@ -130,7 +129,7 @@ export default function QuickAddPanel({ onEventsChanged, onMonthChange, currentM
   function openSundayMass(time: string) {
     const best = bestDefault(sundays)
     setModal({
-      kind: 'sunday-mass', title: 'Sveta misa', category: 'SACRAMENT',
+      kind: 'sunday-mass', title: 'Sveta misa', category: 'SAKRAMENT',
       fixedTime: time, availableDates: sundays,
       selectedDayIso: best ? isoDate(best) : '',
       customTime: '', note: '', saving: false, error: null,
@@ -140,7 +139,7 @@ export default function QuickAddPanel({ onEventsChanged, onMonthChange, currentM
   function openAdoration() {
     const best = bestDefault(thursdays)
     setModal({
-      kind: 'adoration', title: 'Klanjanje', category: 'DEVOTION',
+      kind: 'adoration', title: 'Klanjanje', category: 'POBOZNOST',
       fixedTime: '', availableDates: thursdays,
       selectedDayIso: best ? isoDate(best) : '',
       customTime: '', note: '', saving: false, error: null,
@@ -251,8 +250,8 @@ export default function QuickAddPanel({ onEventsChanged, onMonthChange, currentM
               Tjedne mise · {weekdays.length} dana
             </p>
             <div className="flex flex-wrap gap-2">
-              <QuickBtn label="Misa 08:00" cat="SACRAMENT" onClick={() => openWeekdayMass('08:00')} />
-              <QuickBtn label="Misa 19:00" cat="SACRAMENT" onClick={() => openWeekdayMass('19:00')} />
+              <QuickBtn label="Misa 08:00" cat="SAKRAMENT" onClick={() => openWeekdayMass('08:00')} />
+              <QuickBtn label="Misa 19:00" cat="SAKRAMENT" onClick={() => openWeekdayMass('19:00')} />
             </div>
           </div>
 
@@ -271,7 +270,7 @@ export default function QuickAddPanel({ onEventsChanged, onMonthChange, currentM
             ) : (
               <div className="flex flex-wrap gap-2">
                 {['08:00', '09:30', '11:00', '19:00'].map(t => (
-                  <QuickBtn key={t} label={`Ned ${t}`} cat="SACRAMENT"
+                  <QuickBtn key={t} label={`Ned ${t}`} cat="SAKRAMENT"
                     onClick={() => openSundayMass(t)} count={sundays.length} />
                 ))}
               </div>
@@ -292,7 +291,7 @@ export default function QuickAddPanel({ onEventsChanged, onMonthChange, currentM
               <p className="text-[12px] text-slate-300 italic">Nema četvrtaka u ovom mjesecu.</p>
             ) : (
               <div className="flex flex-wrap gap-2">
-                <QuickBtn label="Klanjanje (četvrtak)" cat="DEVOTION"
+                <QuickBtn label="Klanjanje (četvrtak)" cat="POBOZNOST"
                   onClick={openAdoration} count={thursdays.length} />
               </div>
             )}

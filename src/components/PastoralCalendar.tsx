@@ -14,24 +14,24 @@ const CURRENT_YEAR = new Date().getFullYear()
 const YEAR_OPTIONS = Array.from({ length: 11 }, (_, i) => CURRENT_YEAR - 3 + i)
 
 const COLUMNS: { key: EventCategory; label: string; sublabel: string }[] = [
-  { key: 'DEVOTION', label: 'Pobožnosti', sublabel: 'Klanjanje, Srijeda Sv.Josipu…' },
-  { key: 'ACTIVITY', label: 'Aktivnosti', sublabel: 'Razgovori, Sastanci, Blagoslovi…' },
-  { key: 'SACRAMENT', label: 'Sakramenti', sublabel: 'Misa, Krštenje, Vjenčanje…' },
+  { key: 'POBOZNOST', label: 'Pobožnosti', sublabel: 'Klanjanje, Srijeda Sv.Josipu…' },
+  { key: 'AKTIVNOST', label: 'Aktivnosti', sublabel: 'Razgovori, Sastanci, Blagoslovi…' },
+  { key: 'SAKRAMENT', label: 'Sakramenti', sublabel: 'Misa, Krštenje, Vjenčanje…' },
 ]
 
 const COLUMN_COLORS: Record<EventCategory, {
   bg: string; border: string; chip: string; text: string
   hoverBg: string; tagBg: string; tagText: string
 }> = {
-  DEVOTION: {
+  POBOZNOST: {
     bg: '#f5f3ff', border: '#c4b5fd', chip: '#7c3aed', text: '#4c1d95',
     hoverBg: '#ede9fe', tagBg: '#ede9fe', tagText: '#5b21b6',
   },
-  ACTIVITY: {
+  AKTIVNOST: {
     bg: '#f0fdf4', border: '#86efac', chip: '#16a34a', text: '#14532d',
     hoverBg: '#dcfce7', tagBg: '#dcfce7', tagText: '#15803d',
   },
-  SACRAMENT: {
+  SAKRAMENT: {
     bg: '#fffbeb', border: '#fcd34d', chip: '#b45309', text: '#78350f',
     hoverBg: '#fef3c7', tagBg: '#fef3c7', tagText: '#92400e',
   },

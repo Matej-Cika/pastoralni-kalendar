@@ -18,11 +18,20 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 export type UserRole = 'PRIEST' | 'PARISHIONER'
 
 export type EventType =
-  | 'DEVOTION'
-  | 'ACTIVITY'
-  | 'SACRAMENT'
+  | 'POBOZNOST'
+  | 'AKTIVNOST'
+  | 'SAKRAMENT'
 
-export type EventCategory = 'DEVOTION' | 'ACTIVITY' | 'SACRAMENT'
+export type EventCategory = 'POBOZNOST' | 'AKTIVNOST' | 'SAKRAMENT'
+
+/** Maps DB event_type (may be old or new) to EventCategory for display. */
+export function toEventCategory(s: string): EventCategory {
+  if (s === 'POBOZNOST' || s === 'AKTIVNOST' || s === 'SAKRAMENT') return s
+  if (s === 'DEVOTION') return 'POBOZNOST'
+  if (s === 'ACTIVITY') return 'AKTIVNOST'
+  if (s === 'SACRAMENT') return 'SAKRAMENT'
+  return 'AKTIVNOST'
+}
 
 export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED'
 

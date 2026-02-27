@@ -63,7 +63,8 @@ function CancellationBanner() {
       .order('updated_at', { ascending: false })
 
     setItems((data ?? []).map(b => {
-      const slot = b.availability_slot as { date: string; start_time: string; end_time: string } | null
+      const slotRaw = b.availability_slot
+      const slot = Array.isArray(slotRaw) ? slotRaw[0] : (slotRaw as { date: string; start_time: string; end_time: string } | null)
       return {
         id:        b.id,
         name:      [b.parishioner_first_name, b.parishioner_last_name].filter(Boolean).join(' ') || '—',

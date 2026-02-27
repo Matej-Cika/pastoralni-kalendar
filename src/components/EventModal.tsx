@@ -1,4 +1,10 @@
-import { Event } from '../lib/supabase'
+import { Event, toEventCategory } from '../lib/supabase'
+
+const EVENT_TYPE_LABELS: Record<string, string> = {
+  POBOZNOST: 'Pobožnost',
+  AKTIVNOST: 'Aktivnost',
+  SAKRAMENT: 'Sakrament',
+}
 import EditEventModal from './EditEventModal'
 import { useState } from 'react'
 
@@ -56,7 +62,7 @@ export default function EventModal({ event, onClose, onDelete, onUpdate, canDele
             <div>
               <div className="text-lg font-semibold text-gray-700 mb-1">Event Type</div>
               <div className="inline-block px-3 py-1 rounded text-lg" style={{ backgroundColor: event.color + '20', color: event.color }}>
-                {event.event_type.replace(/_/g, ' ')}
+                {EVENT_TYPE_LABELS[toEventCategory(event.event_type)] ?? event.event_type}
               </div>
             </div>
 

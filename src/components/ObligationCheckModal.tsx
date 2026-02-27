@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { supabase, Event, EventCategory } from '../lib/supabase'
+import { supabase, Event, EventCategory, toEventCategory } from '../lib/supabase'
 
 interface ObligationCheckModalProps {
   onClose: () => void
@@ -17,14 +17,14 @@ const HR_WEEKDAYS: Record<number, string> = {
 }
 
 const CATEGORY_HR: Record<EventCategory, string> = {
-  DEVOTION:  'Pobožnost',
-  ACTIVITY:  'Aktivnost',
-  SACRAMENT: 'Sakrament',
+  POBOZNOST: 'Pobožnost',
+  AKTIVNOST: 'Aktivnost',
+  SAKRAMENT: 'Sakrament',
 }
 const CATEGORY_DOT: Record<EventCategory, string> = {
-  DEVOTION:  '#7c3aed',
-  ACTIVITY:  '#16a34a',
-  SACRAMENT: '#b45309',
+  POBOZNOST: '#7c3aed',
+  AKTIVNOST: '#16a34a',
+  SAKRAMENT: '#b45309',
 }
 
 function formatGroupHeader(dateStr: string): string {
@@ -275,7 +275,7 @@ export default function ObligationCheckModal({ onClose }: ObligationCheckModalPr
                   {/* Events in this day */}
                   <div className="space-y-1.5">
                     {group.events.map(ev => {
-                      const cat = ev.event_type as EventCategory
+                      const cat = toEventCategory(ev.event_type)
                       return (
                         <div
                           key={ev.id}
@@ -297,8 +297,8 @@ export default function ObligationCheckModal({ onClose }: ObligationCheckModalPr
                               <span
                                 className="text-[10px] font-medium px-1.5 py-0.5 rounded-md shrink-0"
                                 style={{
-                                  background: cat === 'DEVOTION' ? '#ede9fe' : cat === 'ACTIVITY' ? '#dcfce7' : '#fef3c7',
-                                  color: cat === 'DEVOTION' ? '#5b21b6' : cat === 'ACTIVITY' ? '#15803d' : '#92400e',
+                                  background: cat === 'POBOZNOST' ? '#ede9fe' : cat === 'AKTIVNOST' ? '#dcfce7' : '#fef3c7',
+                                  color: cat === 'POBOZNOST' ? '#5b21b6' : cat === 'AKTIVNOST' ? '#15803d' : '#92400e',
                                 }}
                               >
                                 {CATEGORY_HR[cat] ?? cat}

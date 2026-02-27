@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase, Event, Conversation, EventType } from '../lib/supabase'
+import { supabase, Event, Conversation } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { fetchGoogleContacts, getContactDisplayName, getContactPhoneNumber, GoogleContact } from '../lib/googleContacts'
 
@@ -9,29 +9,17 @@ interface ConversationModalProps {
   onSuccess: () => void
 }
 
-const EVENT_TYPES: { value: EventType; label: string; color: string }[] = [
-  { value: 'LITURGY_FEAST', label: 'Liturgy Feast', color: '#FF6B6B' },
-  { value: 'SOLEMNITY', label: 'Solemnity', color: '#4ECDC4' },
-  { value: 'MASS', label: 'Mass', color: '#45B7D1' },
-  { value: 'DEVOTION', label: 'Devotion', color: '#96CEB4' },
-  { value: 'MEETING', label: 'Meeting', color: '#FFEAA7' },
-  { value: 'CONVERSATION', label: 'Conversation', color: '#DDA0DD' },
-  { value: 'ADMINISTRATIVE', label: 'Administrative', color: '#98D8C8' },
-  { value: 'PERSONAL', label: 'Personal', color: '#F7DC6F' },
-]
-
 export default function ConversationModal({ event, onClose, onSuccess }: ConversationModalProps) {
   const { user, session } = useAuth()
   const [conversation, setConversation] = useState<Conversation | null>(null)
   const [googleContacts, setGoogleContacts] = useState<GoogleContact[]>([])
-  const [loadingContacts, setLoadingContacts] = useState(false)
   const [personName, setPersonName] = useState('')
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null)
   const [phoneNumber, setPhoneNumber] = useState('')
   const [conversationType, setConversationType] = useState('')
   const [privateNotes, setPrivateNotes] = useState('')
   const [loading, setLoading] = useState(false)
-  const [isNew, setIsNew] = useState(!event)
+  const isNew = !event
 
   useEffect(() => {
     if (event) {
@@ -51,8 +39,6 @@ export default function ConversationModal({ event, onClose, onSuccess }: Convers
     }
 
     try {
-      setLoadingContacts(true)
-      
       // Try to get the access token from the session
       // Supabase stores it in provider_token or we can get it from the provider_refresh_token
       const accessToken = (session as any).provider_token
@@ -67,8 +53,6 @@ export default function ConversationModal({ event, onClose, onSuccess }: Convers
     } catch (error) {
       console.error('Failed to load Google contacts:', error)
       // Silently fail - app should work without contacts
-    } finally {
-      setLoadingContacts(false)
     }
   }
 
@@ -129,8 +113,8 @@ export default function ConversationModal({ event, onClose, onSuccess }: Convers
             description: privateNotes.trim() || null,
             start_time: new Date().toISOString(),
             end_time: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-            event_type: 'CONVERSATION',
-            color: '#DDA0DD',
+            event_type: 'AKTIVNOST',
+            color: '#10b981',
             is_private: true,
             created_by: user.id,
             is_deleted: false,

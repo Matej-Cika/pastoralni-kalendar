@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase, Event, EventCategory } from '../lib/supabase'
+import { supabase, Event, EventCategory, toEventCategory } from '../lib/supabase'
 
 interface UpcomingPanelProps {
   /** Increment this to trigger a fresh fetch (e.g. after creating/editing an event). */
@@ -7,27 +7,27 @@ interface UpcomingPanelProps {
 }
 
 const CATEGORY_HR: Record<EventCategory, string> = {
-  DEVOTION:  'Pobožnost',
-  ACTIVITY:  'Aktivnost',
-  SACRAMENT: 'Sakrament',
+  POBOZNOST: 'Pobožnost',
+  AKTIVNOST: 'Aktivnost',
+  SAKRAMENT: 'Sakrament',
 }
 
 const CATEGORY_DOT: Record<EventCategory, string> = {
-  DEVOTION:  '#7c3aed',
-  ACTIVITY:  '#16a34a',
-  SACRAMENT: '#b45309',
+  POBOZNOST: '#7c3aed',
+  AKTIVNOST: '#16a34a',
+  SAKRAMENT: '#b45309',
 }
 
 const CATEGORY_LABEL_COLOR: Record<EventCategory, string> = {
-  DEVOTION:  '#5b21b6',
-  ACTIVITY:  '#15803d',
-  SACRAMENT: '#92400e',
+  POBOZNOST: '#5b21b6',
+  AKTIVNOST: '#15803d',
+  SAKRAMENT: '#92400e',
 }
 
 const CATEGORY_LABEL_BG: Record<EventCategory, string> = {
-  DEVOTION:  '#ede9fe',
-  ACTIVITY:  '#dcfce7',
-  SACRAMENT: '#fef3c7',
+  POBOZNOST: '#ede9fe',
+  AKTIVNOST: '#dcfce7',
+  SAKRAMENT: '#fef3c7',
 }
 
 const HR_MONTHS: Record<number, string> = {
@@ -181,7 +181,7 @@ export default function UpcomingPanel({ refreshKey }: UpcomingPanelProps) {
                       {/* Category dot */}
                       <div
                         className="w-2 h-2 rounded-full mt-1.5 shrink-0"
-                        style={{ background: CATEGORY_DOT[event.event_type as EventCategory] }}
+                        style={{ background: CATEGORY_DOT[toEventCategory(event.event_type)] }}
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -191,11 +191,11 @@ export default function UpcomingPanel({ refreshKey }: UpcomingPanelProps) {
                           <span
                             className="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded-md"
                             style={{
-                              background: CATEGORY_LABEL_BG[event.event_type as EventCategory],
-                              color: CATEGORY_LABEL_COLOR[event.event_type as EventCategory],
+                              background: CATEGORY_LABEL_BG[toEventCategory(event.event_type)],
+                              color: CATEGORY_LABEL_COLOR[toEventCategory(event.event_type)],
                             }}
                           >
-                            {CATEGORY_HR[event.event_type as EventCategory]}
+                            {CATEGORY_HR[toEventCategory(event.event_type)]}
                           </span>
                         </div>
                         <span className="text-[11px] text-slate-400 mt-0.5 block">

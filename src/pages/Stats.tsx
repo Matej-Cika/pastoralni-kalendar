@@ -27,7 +27,7 @@ function formatEventTime(iso: string): string {
 }
 
 // ── Types ────────────────────────────────────────────────────
-type Category = 'SACRAMENT' | 'DEVOTION' | 'ACTIVITY'
+type Category = 'SAKRAMENT' | 'POBOZNOST' | 'AKTIVNOST'
 
 interface EventRow {
   id: string
@@ -38,12 +38,18 @@ interface EventRow {
 }
 
 interface Stats {
-  sacrament: number
-  devotion:  number
-  activity:  number
+  sacrament: number   // SAKRAMENT
+  devotion:  number   // POBOZNOST
+  activity:  number   // AKTIVNOST
   pending:   number
   confirmed: number
-  completed: number  // Odrađene rezervacije
+  completed: number   // Odrađene rezervacije
+}
+
+const CAT_TO_STAT_KEY: Record<Category, keyof Stats> = {
+  SAKRAMENT: 'sacrament',
+  POBOZNOST: 'devotion',
+  AKTIVNOST: 'activity',
 }
 
 // ── Category config ──────────────────────────────────────────
@@ -56,7 +62,7 @@ const CAT_CONFIG: Record<Category, {
   badgeBg: string
   badgeText: string
 }> = {
-  SACRAMENT: {
+  SAKRAMENT: {
     label:       'Sakramenti',
     cardBg:      'bg-amber-50',
     cardBorder:  'border-amber-200',
@@ -69,7 +75,7 @@ const CAT_CONFIG: Record<Category, {
       </svg>
     ),
   },
-  DEVOTION: {
+  POBOZNOST: {
     label:       'Pobožnosti',
     cardBg:      'bg-violet-50',
     cardBorder:  'border-violet-200',
@@ -82,7 +88,7 @@ const CAT_CONFIG: Record<Category, {
       </svg>
     ),
   },
-  ACTIVITY: {
+  AKTIVNOST: {
     label:       'Aktivnosti',
     cardBg:      'bg-emerald-50',
     cardBorder:  'border-emerald-200',
@@ -155,17 +161,20 @@ export default function Stats() {
           .eq('status', 'COMPLETED'),
       ])
 
-      const completed = (completedBookings ?? []).filter((b: { slot_date?: string; availability_slot?: { date: string } }) => {
-        const d = b.slot_date ?? b.availability_slot?.date
-        if (!d) return false
-        const slotDate = new Date(d + 'T12:00:00')
-        return slotDate >= start && slotDate < end
+      type CompletedRow = { slot_date?: string; availability_slot?: { date: string } | { date: string }[] }
+      const completed = (completedBookings ?? []).filter((b: CompletedRow) => {
+        const slot = b.availability_slot
+        const slotDateStr = Array.isArray(slot) ? slot[0]?.date : slot?.date
+        const dateStr = b.slot_date ?? slotDateStr
+        if (!dateStr) return false
+        const parsedDate = new Date(dateStr + 'T12:00:00')
+        return parsedDate >= start && parsedDate < end
       }).length
 
       setStats({
-        sacrament: evData?.filter(e => e.event_type === 'SACRAMENT').length ?? 0,
-        devotion:  evData?.filter(e => e.event_type === 'DEVOTION').length  ?? 0,
-        activity:  evData?.filter(e => e.event_type === 'ACTIVITY').length  ?? 0,
+        sacrament: evData?.filter(e => e.event_type === 'SAKRAMENT').length ?? 0,
+        devotion:  evData?.filter(e => e.event_type === 'POBOZNOST').length  ?? 0,
+        activity:  evData?.filter(e => e.event_type === 'AKTIVNOST').length  ?? 0,
         pending:   pending  ?? 0,
         confirmed: confirmed ?? 0,
         completed: completed ?? 0,
@@ -258,7 +267,7 @@ export default function Stats() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             {(Object.entries(CAT_CONFIG) as [Category, typeof CAT_CONFIG[Category]][]).map(([cat, cfg]) => {
-              const count   = stats ? stats[cat.toLowerCase() as keyof Stats] : 0
+              const count   = stats ? stats[CAT_TO_STAT_KEY[cat]] : 0
               const isOpen  = activeCategory === cat
               const isEmpty = count === 0
 
@@ -273,7 +282,7 @@ export default function Stats() {
                     isOpen ? `${cfg.cardBorder} ring-2 ring-offset-1` : cfg.cardBorder,
                     isEmpty ? 'opacity-50 cursor-default' : 'cursor-pointer hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98]',
                   ].join(' ')}
-                  style={isOpen ? { ringColor: 'currentColor' } : {}}
+                  style={isOpen ? { ['--tw-ring-color' as string]: 'currentColor' } : {}}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${cfg.badgeBg}`}>
@@ -319,7 +328,7 @@ export default function Stats() {
                 </div>
               </div>
               <span className={`px-3 py-1 rounded-full text-[13px] font-bold ${CAT_CONFIG[activeCategory].badgeBg} ${CAT_CONFIG[activeCategory].cardText}`}>
-                {stats?.[activeCategory.toLowerCase() as keyof Stats] ?? 0}
+                {stats?.[CAT_TO_STAT_KEY[activeCategory]] ?? 0}
               </span>
             </div>
 

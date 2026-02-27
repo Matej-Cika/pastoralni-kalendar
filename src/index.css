@@ -60,13 +60,23 @@ body {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+  min-width: 540px;
 }
 
 .pastoral-table colgroup col:nth-child(1) {
-  width: 140px;
+  width: 100px;
 }
 .pastoral-table colgroup col:nth-child(n+2) {
-  width: calc((100% - 140px) / 3);
+  width: calc((100% - 100px) / 3);
+}
+
+@media (min-width: 640px) {
+  .pastoral-table colgroup col:nth-child(1) {
+    width: 140px;
+  }
+  .pastoral-table colgroup col:nth-child(n+2) {
+    width: calc((100% - 140px) / 3);
+  }
 }
 
 .pastoral-table th,

@@ -194,7 +194,7 @@ export default function PastoralCalendar({ currentMonth, onMonthChange, onEvents
       <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_2px_16px_rgba(0,0,0,0.06)] overflow-hidden">
 
         {/* ── Top bar ── */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 flex-wrap gap-3">
+        <div className="flex items-center justify-between px-3 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex-wrap gap-2 sm:gap-3">
           <div className="flex items-center gap-2 flex-wrap">
             {/* Month dropdown */}
             <select
@@ -244,26 +244,26 @@ export default function PastoralCalendar({ currentMonth, onMonthChange, onEvents
           </div>
 
           <div className="flex items-center gap-2">
-            <button
+              <button
               onClick={prevMonth}
-              className="flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors"
+              className="flex items-center gap-1 px-2.5 sm:px-3.5 py-2 text-[12px] sm:text-[13px] font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
-              Prethodni
+              <span className="hidden sm:inline">Prethodni</span>
             </button>
             <button
               onClick={goToday}
-              className="px-3.5 py-2 text-[13px] font-medium text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-xl hover:bg-indigo-100 transition-colors"
+              className="px-2.5 sm:px-3.5 py-2 text-[12px] sm:text-[13px] font-medium text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-xl hover:bg-indigo-100 transition-colors"
             >
               Danas
             </button>
             <button
               onClick={nextMonth}
-              className="flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors"
+              className="flex items-center gap-1 px-2.5 sm:px-3.5 py-2 text-[12px] sm:text-[13px] font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors"
             >
-              Sljedeći
+              <span className="hidden sm:inline">Sljedeći</span>
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
@@ -272,13 +272,13 @@ export default function PastoralCalendar({ currentMonth, onMonthChange, onEvents
         </div>
 
         {/* ── Column legend chips ── */}
-        <div className="flex items-center gap-2 px-6 py-3 border-b border-slate-100 bg-slate-50/60">
+        <div className="flex items-center gap-2 px-3 sm:px-6 py-2.5 sm:py-3 border-b border-slate-100 bg-slate-50/60 flex-wrap">
           {COLUMNS.map((col) => {
             const c = COLUMN_COLORS[col.key]
             return (
               <div
                 key={col.key}
-                className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium border"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-[12px] font-medium border"
                 style={{ background: c.tagBg, borderColor: c.border, color: c.tagText }}
               >
                 <span className="w-2 h-2 rounded-full" style={{ background: c.chip }} />
@@ -286,14 +286,14 @@ export default function PastoralCalendar({ currentMonth, onMonthChange, onEvents
               </div>
             )
           })}
-          <span className="ml-auto text-[12px] text-slate-400">Kliknite ćeliju za dodavanje unosa</span>
+          <span className="hidden sm:inline ml-auto text-[12px] text-slate-400">Kliknite ćeliju za dodavanje unosa</span>
         </div>
 
         {/* ── Table ── */}
         <div className="overflow-x-auto">
           <table className="pastoral-table">
             <colgroup>
-              <col style={{ width: '140px' }} />
+              <col style={{ width: '100px', minWidth: '80px' }} />
               <col /><col /><col />
             </colgroup>
 

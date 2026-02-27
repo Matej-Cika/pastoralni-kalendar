@@ -63,12 +63,12 @@ export default function CreateEventModal({ onClose, onSuccess, initialDate }: Cr
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
       <div
-        className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6">
-          <div className="flex justify-between items-start mb-6">
-            <h2 className="text-3xl font-bold text-gray-900">Create New Event</h2>
+        <div className="p-4 sm:p-6">
+          <div className="flex justify-between items-start mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-3xl font-bold text-gray-900">Create New Event</h2>
             <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl">
               ×
             </button>
@@ -87,7 +87,7 @@ export default function CreateEventModal({ onClose, onSuccess, initialDate }: Cr
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-lg font-semibold text-gray-700 mb-2">Start Time *</label>
                 <input

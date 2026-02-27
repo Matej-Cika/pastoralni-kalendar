@@ -234,20 +234,21 @@ export default function AvailabilitySlots() {
   return (
     <div className="min-h-screen bg-[#f6f7fa]">
       <Navigation />
-      <div className="max-w-[760px] mx-auto px-6 py-8">
-        <div className="mb-7 flex items-center justify-between">
-          <div>
-            <h1 className="text-[26px] font-semibold text-slate-900 tracking-tight">Slobodni termini</h1>
-            <p className="text-[14px] text-slate-400 mt-1">Upravljanje dostupnošću za pastoralne susrete</p>
+      <div className="max-w-[760px] mx-auto px-3 sm:px-6 py-4 sm:py-8">
+        <div className="mb-5 sm:mb-7 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-[20px] sm:text-[26px] font-semibold text-slate-900 tracking-tight">Slobodni termini</h1>
+            <p className="text-[13px] sm:text-[14px] text-slate-400 mt-0.5 sm:mt-1">Upravljanje dostupnošću</p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-colors"
+            className="shrink-0 flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 text-[12px] sm:text-[13px] font-medium text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
-            Novi termin
+            <span className="hidden sm:inline">Novi termin</span>
+            <span className="sm:hidden">Novi</span>
           </button>
         </div>
 
@@ -267,10 +268,11 @@ export default function AvailabilitySlots() {
             {slots.map((slot) => (
               <div
                 key={slot.id}
-                className={`bg-white rounded-2xl border border-slate-200 px-5 py-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] flex items-center justify-between gap-4 ${!slot.is_active ? 'opacity-60' : ''}`}
+                className={`bg-white rounded-2xl border border-slate-200 px-4 sm:px-5 py-3.5 sm:py-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] ${!slot.is_active ? 'opacity-60' : ''}`}
               >
-                <div>
-                  <p className="text-[15px] font-semibold text-slate-800 capitalize">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                <div className="min-w-0">
+                  <p className="text-[14px] sm:text-[15px] font-semibold text-slate-800 capitalize">
                     {formatSlotDate(slot.date)}
                   </p>
                   <p className="text-[13px] text-slate-400 mt-0.5">
@@ -303,6 +305,7 @@ export default function AvailabilitySlots() {
                   >
                     Obriši
                   </button>
+                </div>
                 </div>
               </div>
             ))}
@@ -370,10 +373,10 @@ export default function AvailabilitySlots() {
           onClick={() => setShowCreateModal(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-0"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-100">
               <h2 className="text-[17px] font-semibold text-slate-900">Novi slobodni termin</h2>
               <button
                 onClick={() => setShowCreateModal(false)}
@@ -382,7 +385,7 @@ export default function AvailabilitySlots() {
                 ×
               </button>
             </div>
-            <div className="px-6 py-5 space-y-4">
+            <div className="px-4 sm:px-6 py-4 sm:py-5 space-y-4">
               {createError && (
                 <div className="px-4 py-3 bg-red-50 border border-red-100 rounded-xl text-[13px] text-red-600">
                   {createError}
@@ -399,7 +402,7 @@ export default function AvailabilitySlots() {
                   className="w-full px-3.5 py-2.5 text-[14px] text-slate-800 bg-white border border-slate-200 rounded-xl outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">
                     Početak *
@@ -427,7 +430,7 @@ export default function AvailabilitySlots() {
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/60 rounded-b-2xl">
+            <div className="flex justify-end gap-3 px-4 sm:px-6 py-4 border-t border-slate-100 bg-slate-50/60 rounded-b-2xl">
               <button
                 onClick={() => setShowCreateModal(false)}
                 className="px-5 py-2.5 text-[13px] font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"

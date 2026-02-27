@@ -208,11 +208,11 @@ export default function CellEntryModal({ date, category, existingEvents, onClose
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto mx-2 sm:mx-4"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal header */}
-        <div className="flex items-start justify-between px-7 py-5 border-b border-slate-100">
+        <div className="flex items-start justify-between px-4 sm:px-7 py-4 sm:py-5 border-b border-slate-100">
           <div>
             <h2 className="text-[18px] font-semibold text-slate-900">{CATEGORY_LABELS[category]}</h2>
             <p className="text-[13px] text-slate-400 mt-0.5">{dateLabel}</p>
@@ -226,7 +226,7 @@ export default function CellEntryModal({ date, category, existingEvents, onClose
         </div>
 
         {/* Entries */}
-        <div className="px-7 py-5 space-y-4">
+        <div className="px-4 sm:px-7 py-4 sm:py-5 space-y-4">
           {/* Error messages */}
           {(saveError || deleteError) && (
             <div className="px-4 py-3 bg-red-50 border border-red-100 rounded-xl text-[13px] text-red-600">
@@ -304,7 +304,7 @@ export default function CellEntryModal({ date, category, existingEvents, onClose
 
                 {/* Times */}
                 <div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[12px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">
                         Početak
@@ -367,7 +367,7 @@ export default function CellEntryModal({ date, category, existingEvents, onClose
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-7 py-5 border-t border-slate-100 bg-slate-50/60 rounded-b-2xl">
+        <div className="flex items-center justify-end gap-3 px-4 sm:px-7 py-4 sm:py-5 border-t border-slate-100 bg-slate-50/60 rounded-b-2xl">
           <button
             onClick={onClose}
             className="px-5 py-2.5 text-[13px] font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"

@@ -47,7 +47,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-[#f6f7fa] px-4">
       <div className="w-full max-w-[420px]">
 
-        <div className="bg-white rounded-2xl shadow-[0_4px_32px_rgba(0,0,0,0.08)] border border-slate-200/60 px-10 py-10">
+          <div className="bg-white rounded-2xl shadow-[0_4px_32px_rgba(0,0,0,0.08)] border border-slate-200/60 px-6 sm:px-10 py-8 sm:py-10">
 
           <div className="text-center mb-9">
             <div className="flex justify-center mb-5">

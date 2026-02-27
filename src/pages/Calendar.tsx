@@ -98,16 +98,15 @@ function CancellationBanner() {
   const n = visible.length
 
   return (
-    <div className="mb-7 rounded-2xl overflow-hidden shadow-[0_8px_32px_rgba(220,38,38,0.22)] border-2 border-red-400">
+    <div className="mb-5 sm:mb-7 rounded-2xl overflow-hidden shadow-[0_8px_32px_rgba(220,38,38,0.22)] border-2 border-red-400">
       {/* ── Main clickable header (collapsed summary) ── */}
       <button
         onClick={() => setExpanded(e => !e)}
-        className="w-full text-left bg-gradient-to-r from-red-700 via-red-600 to-rose-600 px-5 py-5 flex items-center justify-between gap-4 hover:from-red-800 hover:via-red-700 hover:to-rose-700 transition-all"
+        className="w-full text-left bg-gradient-to-r from-red-700 via-red-600 to-rose-600 px-3 sm:px-5 py-4 sm:py-5 flex items-center justify-between gap-3 sm:gap-4 hover:from-red-800 hover:via-red-700 hover:to-rose-700 transition-all"
       >
-        <div className="flex items-center gap-4">
-          {/* Pulsing alert icon */}
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <div className="relative shrink-0">
-            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/20 flex items-center justify-center">
               <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
               </svg>
@@ -117,10 +116,10 @@ function CancellationBanner() {
             </span>
           </div>
           <div>
-            <p className="text-white font-bold text-[17px] leading-tight">
-              ⚠️ Otkazani susreti — akcija potrebna
+            <p className="text-white font-bold text-[14px] sm:text-[17px] leading-tight">
+              ⚠️ Otkazani susreti
             </p>
-            <p className="text-red-100 text-[13px] mt-1 font-medium">
+            <p className="text-red-100 text-[12px] sm:text-[13px] mt-0.5 sm:mt-1 font-medium">
               {n === 1
                 ? '1 župljani/ca otkazao/la potvrđeni susret'
                 : `${n} župljana otkazalo potvrđene susrete`}
@@ -146,7 +145,7 @@ function CancellationBanner() {
         <>
           <div className="bg-white divide-y divide-red-50">
             {visible.map(item => (
-              <div key={item.id} className="flex items-center justify-between gap-4 px-5 py-4">
+              <div key={item.id} className="flex items-center justify-between gap-3 sm:gap-4 px-3 sm:px-5 py-3 sm:py-4">
                 <div className="flex items-center gap-3 min-w-0">
                   {/* Avatar */}
                   <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
@@ -178,7 +177,7 @@ function CancellationBanner() {
           </div>
 
           {/* Footer */}
-          <div className="bg-red-50 border-t border-red-100 px-5 py-3 flex items-center justify-between gap-3">
+          <div className="bg-red-50 border-t border-red-100 px-3 sm:px-5 py-3 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
             <p className="text-[12px] text-red-400">Automatski nestaje nakon 48 sati od otkazivanja</p>
             <div className="flex items-center gap-3">
               <button
@@ -222,20 +221,21 @@ export default function Calendar() {
   return (
     <div className="min-h-screen bg-[#f6f7fa]">
       <Navigation />
-      <div className="max-w-[1400px] mx-auto px-6 py-8">
-        <div className="mb-7 flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-[26px] font-semibold text-slate-900 tracking-tight">Pastoralni kalendar</h1>
-            <p className="text-[14px] text-slate-400 mt-1">Pobožnosti, aktivnosti i sakramenti po danima i kategorijama</p>
+      <div className="max-w-[1400px] mx-auto px-3 sm:px-6 py-4 sm:py-8">
+        <div className="mb-5 sm:mb-7 flex items-start justify-between gap-3 sm:gap-4">
+          <div className="min-w-0">
+            <h1 className="text-[20px] sm:text-[26px] font-semibold text-slate-900 tracking-tight">Pastoralni kalendar</h1>
+            <p className="text-[13px] sm:text-[14px] text-slate-400 mt-0.5 sm:mt-1">Pobožnosti, aktivnosti i sakramenti</p>
           </div>
           <button
             onClick={() => setShowObligationCheck(true)}
-            className="shrink-0 flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 shadow-sm transition-colors mt-1"
+            className="shrink-0 flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 text-[12px] sm:text-[13px] font-medium text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 shadow-sm transition-colors mt-0.5"
           >
             <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            Provjera obveza
+            <span className="hidden sm:inline">Provjera obveza</span>
+            <span className="sm:hidden">Obveze</span>
           </button>
         </div>
 

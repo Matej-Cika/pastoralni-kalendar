@@ -221,14 +221,14 @@ export default function Stats() {
   return (
     <div className="min-h-screen bg-[#f6f7fa]">
       <Navigation />
-      <div className="max-w-[900px] mx-auto px-6 py-8">
+      <div className="max-w-[900px] mx-auto px-3 sm:px-6 py-4 sm:py-8">
 
         {/* ── Header ── */}
-        <div className="mb-7 flex items-start justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-[26px] font-semibold text-slate-900 tracking-tight">Statistika</h1>
-            <p className="text-[14px] text-slate-400 mt-1">
-              Pregled unosa po kategorijama — kliknite karticu za detalje
+        <div className="mb-5 sm:mb-7 flex items-start justify-between gap-3 sm:gap-4 flex-wrap">
+          <div className="min-w-0">
+            <h1 className="text-[20px] sm:text-[26px] font-semibold text-slate-900 tracking-tight">Statistika</h1>
+            <p className="text-[13px] sm:text-[14px] text-slate-400 mt-0.5 sm:mt-1">
+              Pregled unosa po kategorijama
             </p>
           </div>
 
@@ -315,7 +315,7 @@ export default function Stats() {
         {activeCategory && (
           <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_2px_16px_rgba(0,0,0,0.05)] overflow-hidden mb-6">
             {/* List header */}
-            <div className={`px-6 py-4 border-b border-slate-100 flex items-center justify-between ${CAT_CONFIG[activeCategory].cardBg}`}>
+            <div className={`px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 flex items-center justify-between ${CAT_CONFIG[activeCategory].cardBg}`}>
               <div className="flex items-center gap-2.5">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${CAT_CONFIG[activeCategory].badgeBg}`}>
                   {CAT_CONFIG[activeCategory].icon}
@@ -345,7 +345,7 @@ export default function Stats() {
             ) : (
               <ul className="divide-y divide-slate-100">
                 {events.map((ev, idx) => (
-                  <li key={ev.id} className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition-colors">
+                  <li key={ev.id} className="flex items-center gap-3 sm:gap-4 px-4 sm:px-6 py-3 sm:py-4 hover:bg-slate-50 transition-colors">
                     {/* Index number */}
                     <span className="shrink-0 w-7 h-7 rounded-full bg-slate-100 text-slate-500 text-[12px] font-bold flex items-center justify-center">
                       {idx + 1}

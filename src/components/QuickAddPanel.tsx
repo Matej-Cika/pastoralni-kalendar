@@ -226,23 +226,23 @@ export default function QuickAddPanel({ onEventsChanged, onMonthChange, currentM
       <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_2px_12px_rgba(0,0,0,0.05)] overflow-hidden mb-6">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-          <div className="flex items-center gap-2.5">
+        <div className="flex items-center justify-between px-3 sm:px-5 py-3 sm:py-4 border-b border-slate-100">
+          <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
             <div className="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center">
               <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
               </svg>
             </div>
-            <span className="text-[14px] font-semibold text-slate-800">Brzo dodavanje</span>
-            <span className="text-[12px] text-slate-400">— datumi za odabrani mjesec</span>
+            <span className="text-[13px] sm:text-[14px] font-semibold text-slate-800">Brzo dodavanje</span>
+            <span className="text-[11px] sm:text-[12px] text-slate-400 hidden sm:inline">— datumi za odabrani mjesec</span>
           </div>
-          <span className="text-[12px] text-slate-700 font-semibold bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full">
+          <span className="text-[11px] sm:text-[12px] text-slate-700 font-semibold bg-indigo-50 border border-indigo-100 px-2.5 sm:px-3 py-1 rounded-full">
             {monthLabel}
           </span>
         </div>
 
         {/* Button groups */}
-        <div className="px-5 py-4 flex flex-wrap gap-y-5 gap-x-6">
+        <div className="px-3 sm:px-5 py-3 sm:py-4 flex flex-wrap gap-y-4 sm:gap-y-5 gap-x-4 sm:gap-x-6">
 
           {/* Weekday masses */}
           <div>
@@ -311,7 +311,7 @@ export default function QuickAddPanel({ onEventsChanged, onMonthChange, currentM
             onClick={e => e.stopPropagation()}
           >
             {/* Modal header */}
-            <div className="flex items-start justify-between px-6 py-5 border-b border-slate-100">
+            <div className="flex items-start justify-between px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-100">
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <span className="w-2 h-2 rounded-full" style={{ background: CAT_COLORS[modal.category].dot }} />
@@ -400,7 +400,7 @@ export default function QuickAddPanel({ onEventsChanged, onMonthChange, currentM
             </div>
 
             {/* Modal footer */}
-            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/60 rounded-b-2xl">
+            <div className="flex items-center justify-end gap-3 px-4 sm:px-6 py-4 border-t border-slate-100 bg-slate-50/60 rounded-b-2xl">
               <button
                 onClick={closeModal}
                 className="px-5 py-2.5 text-[13px] font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"

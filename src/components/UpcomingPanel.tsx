@@ -133,15 +133,15 @@ export default function UpcomingPanel({ refreshKey }: UpcomingPanelProps) {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_2px_12px_rgba(0,0,0,0.05)] overflow-hidden mb-6">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-        <div className="flex items-center gap-2.5">
+      <div className="flex items-center justify-between px-3 sm:px-5 py-3 sm:py-4 border-b border-slate-100">
+        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
           <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center">
             <svg className="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
-          <span className="text-[14px] font-semibold text-slate-800">Nadolazeće obveze</span>
-          <span className="text-[12px] text-slate-400 font-normal">— sljedeća 3 dana</span>
+          <span className="text-[13px] sm:text-[14px] font-semibold text-slate-800">Nadolazeće obveze</span>
+          <span className="text-[11px] sm:text-[12px] text-slate-400 font-normal hidden sm:inline">— sljedeća 3 dana</span>
         </div>
         {!loading && totalEvents > 0 && (
           <span className="text-[12px] font-medium text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-full">
@@ -162,9 +162,9 @@ export default function UpcomingPanel({ refreshKey }: UpcomingPanelProps) {
         ) : totalEvents === 0 ? (
           <p className="text-[13px] text-slate-400 py-1">Nema obveza u naredna 3 dana.</p>
         ) : (
-          <div className="flex gap-5 flex-wrap">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 sm:flex-wrap">
             {groups.filter(g => g.events.length > 0).map((group) => (
-              <div key={group.label} className="min-w-[200px] flex-1">
+              <div key={group.label} className="sm:min-w-[200px] flex-1">
                 {/* Day header */}
                 <div className="flex items-baseline gap-2 mb-2.5">
                   <span className="text-[13px] font-bold text-slate-800">{group.label}</span>

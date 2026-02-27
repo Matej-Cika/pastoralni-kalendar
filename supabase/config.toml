@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.notify-parishioner-cancellation]
 verify_jwt = false
+
+[functions.create-user]
+verify_jwt = false

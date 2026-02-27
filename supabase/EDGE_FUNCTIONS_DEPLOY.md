@@ -9,10 +9,13 @@ If you see `401 Invalid JWT` or `FunctionsHttpError` when the app invokes notifi
 `supabase/config.toml` already sets `verify_jwt = false` for the notification functions. Deploy with:
 
 ```bash
+supabase functions deploy create-user
 supabase functions deploy notify-priest-new-booking
 supabase functions deploy notify-priest-cancellation
 supabase functions deploy notify-parishioner-cancellation
 ```
+
+**create-user** je obavezan za registraciju – kreira korisnike s automatskom potvrdom e-maila, tako da mogu prijaviti se odmah nakon registracije (bez ručne potvrde).
 
 ### Option B: Supabase Dashboard
 

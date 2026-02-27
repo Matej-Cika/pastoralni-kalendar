@@ -5,7 +5,7 @@ A secure, lightweight web application for Catholic priests to manage liturgical 
 ## Features
 
 - 📅 Calendar management with multiple views (month, week, day, agenda)
-- 🔐 Google OAuth authentication
+- 🔐 Prijava e-mail + lozinka
 - 👥 Role-based access (Priest vs Parishioner)
 - 📝 Event management with soft deletes
 - 📞 Booking system for parishioners
@@ -30,7 +30,6 @@ npm install
 ```
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-VITE_GOOGLE_CLIENT_ID=your_google_client_id
 ```
 
 3. Run the database migration (see `supabase/migrations/001_initial_schema.sql`)
@@ -46,5 +45,7 @@ Run the SQL migration file in your Supabase SQL editor to create all necessary t
 
 ## Auth Configuration (Supabase)
 
-- **Confirm email**: By default, Supabase requires new users to confirm their email before signing in. The app shows "Provjerite e-mail" after registration.
-- **Za prijavu bez potvrde**: U Supabase Dashboardu → Authentication → Providers → Email isključite "Confirm email" ako želite da se korisnici mogu prijaviti odmah nakon registracije.
+Prijava koristi **e-mail + lozinka**. Nema potrebe za ručnom potvrdom – Edge Function `create-user` kreira korisnike s automatskom potvrdom.
+
+1. **Obavezno deployati Edge Function**: `supabase functions deploy create-user` (vidi `supabase/EDGE_FUNCTIONS_DEPLOY.md`)
+2. **URL Configuration** (za Zaboravljena lozinka): Dodajte `http://localhost:5173` i produkcijsku URL u Redirect URLs.

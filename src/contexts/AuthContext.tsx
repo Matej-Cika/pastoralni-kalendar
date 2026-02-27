@@ -9,8 +9,9 @@ interface AuthContextType {
   loading: boolean
   authError: string | null
   signInWithPassword: (email: string, password: string) => Promise<void>
-  signUp: (email: string, password: string, name?: string) => Promise<{ needsEmailConfirmation: boolean }>
+  signUp: (email: string, password: string, name?: string) => Promise<void>
   resetPasswordForEmail: (email: string) => Promise<void>
+  updatePassword: (newPassword: string) => Promise<void>
   signOut: () => Promise<void>
   isPriest: boolean
   isParishioner: boolean
@@ -214,28 +215,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signInWithPassword(email: string, password: string) {
     setAuthError(null)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
     if (error) throw error
   }
 
-  async function signUp(email: string, password: string, name?: string): Promise<{ needsEmailConfirmation: boolean }> {
+  async function signUp(email: string, password: string, name?: string) {
     setAuthError(null)
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { name: name ?? email.split('@')[0] } },
+    const trimmedEmail = email.trim()
+    const nameVal = name ?? trimmedEmail.split('@')[0]
+    // Edge Function create-user kreira korisnika s email_confirm: true – odmah može prijaviti se.
+    const { data, error } = await supabase.functions.invoke('create-user', {
+      body: { email: trimmedEmail, password, name: nameVal },
     })
-    if (error) throw error
-    // No session = Supabase requires email confirmation; user must click link before signing in
-    const needsEmailConfirmation = !data.session && !!data.user
-    return { needsEmailConfirmation }
+    const body = (data as { error?: string; message?: string; ok?: boolean }) ?? {}
+    const isUserExists = body?.error === 'USER_EXISTS' || (body?.error ?? '').toLowerCase().includes('već postoji')
+    if (isUserExists) {
+      const err = new Error('Korisnik s ovom e-mail adresom već postoji. Prijavite se ispod.') as Error & { code?: string }
+      err.code = 'user_already_exists'
+      throw err
+    }
+    if (!error && body?.ok) {
+      const { error: signInErr } = await supabase.auth.signInWithPassword({ email: trimmedEmail, password })
+      if (signInErr) throw signInErr
+      return
+    }
+    // Fallback: klasični signUp ako Edge Function nije deployan (radi samo uz "Confirm email" isključen)
+    const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
+      email: trimmedEmail,
+      password,
+      options: { data: { name: nameVal } },
+    })
+    if (signUpErr) {
+      if (signUpErr.message?.toLowerCase().includes('already') || (signUpErr as { code?: string }).code === 'user_already_exists') {
+        const err = new Error('Korisnik s ovom e-mail adresom već postoji. Prijavite se ispod.') as Error & { code?: string }
+        err.code = 'user_already_exists'
+        throw err
+      }
+      throw signUpErr
+    }
+    if (signUpData.session) return
+    throw new Error('Registracija zahtijeva Edge Function create-user. Deployajte: supabase functions deploy create-user')
   }
 
   async function resetPasswordForEmail(email: string) {
     setAuthError(null)
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/`,
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/login`,
     })
+    if (error) throw error
+  }
+
+  async function updatePassword(newPassword: string) {
+    setAuthError(null)
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
     if (error) throw error
   }
 
@@ -250,7 +282,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, userProfile, session, loading, authError, signInWithPassword, signUp, resetPasswordForEmail, signOut, isPriest, isParishioner }}
+      value={{ user, userProfile, session, loading, authError, signInWithPassword, signUp, resetPasswordForEmail, updatePassword, signOut, isPriest, isParishioner }}
     >
       {children}
     </AuthContext.Provider>

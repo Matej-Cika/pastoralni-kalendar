@@ -119,14 +119,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      if (!initDoneRef.current) {
-        // Still in the initial loading phase — initialize() handles fetchUserProfile
-        return
-      }
-
-      // SIGNED_IN or USER_UPDATED after initialization.
-      // Refresh profile silently in background — do NOT show loading spinner,
-      // as this fires on tab focus/restore and must not freeze the UI.
+      // SIGNED_IN or USER_UPDATED: fetch profile. (INITIAL_SESSION is skipped above.)
+      // Must run even when initDoneRef is false — e.g. user just logged in on a page
+      // that had no prior session, so fetchUserProfile was never called.
       fetchUserProfile(newSession.user, mounted)
     })
 

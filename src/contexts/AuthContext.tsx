@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(activeSession?.user ?? null)
 
         if (activeSession?.user) {
-          await fetchUserProfile(activeSession.user.id, activeSession.user.email ?? '', mounted)
+          await fetchUserProfile(activeSession.user, mounted)
         } else {
           setLoading(false)
         }
@@ -127,7 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // SIGNED_IN or USER_UPDATED after initialization.
       // Refresh profile silently in background — do NOT show loading spinner,
       // as this fires on tab focus/restore and must not freeze the UI.
-      fetchUserProfile(newSession.user.id, newSession.user.email ?? '', mounted)
+      fetchUserProfile(newSession.user, mounted)
     })
 
     return () => {
@@ -137,8 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   async function fetchUserProfile(
-    userId: string,
-    userEmail: string,
+    supabaseUser: SupabaseUser,
     mounted: boolean | object
   ) {
     const isMounted = () => (typeof mounted === 'boolean' ? mounted : true)
@@ -151,7 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // hang PostgREST indefinitely — the migration fixes the root cause, but this
       // is a client-side safety net for any future stalls.
       const result = await runWithTimeout(
-        () => supabase.from('users').select('*').eq('id', userId).single(),
+        () => supabase.from('users').select('*').eq('id', supabaseUser.id).single(),
         PROFILE_QUERY_TIMEOUT_MS
       ) as { data: User | null; error: { message: string; code?: string; status?: number } | null }
 
@@ -161,7 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (result.error.code === 'PGRST116') {
           // User exists in auth but not in public.users — trigger may have failed.
           // Auto-create with email-based role assignment.
-          await autoCreateUserProfile(userId, userEmail, isMounted)
+          await autoCreateUserProfile(supabaseUser, isMounted)
         } else if (isInitialLoad) {
           setAuthError('Nije moguće učitati korisnički profil. Molimo kontaktirajte administratora.')
         }
@@ -195,7 +194,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const result = await runWithTimeout(
         () => supabase
           .from('users')
-          .insert({ id: userId, email: userEmail, name, role })
+          .insert({ id: supabaseUser.id, email: userEmail, name, role })
           .select()
           .single(),
         PROFILE_QUERY_TIMEOUT_MS

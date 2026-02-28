@@ -177,7 +177,7 @@ BEGIN
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
     CASE
-      WHEN NEW.email = 'ivanterze@gmail.com' THEN 'PRIEST'::user_role
+      WHEN NEW.email = 'ivan.terze@gmail.com' THEN 'PRIEST'::user_role
       ELSE 'PARISHIONER'::user_role
     END
   )
@@ -190,6 +190,6 @@ $$;
 -- ── Update ALL existing users to email-based roles ───────────
 UPDATE public.users
 SET role = CASE
-  WHEN email = 'ivanterze@gmail.com' THEN 'PRIEST'::user_role
+  WHEN email = 'ivan.terze@gmail.com' THEN 'PRIEST'::user_role
   ELSE 'PARISHIONER'::user_role
 END;

@@ -18,7 +18,7 @@ BEGIN
       split_part(NEW.email, '@', 1)
     ),
     CASE
-      WHEN NEW.email = 'ivanterze@gmail.com' THEN 'PRIEST'::user_role
+      WHEN NEW.email = 'ivan.terze@gmail.com' THEN 'PRIEST'::user_role
       ELSE 'PARISHIONER'::user_role
     END
   )

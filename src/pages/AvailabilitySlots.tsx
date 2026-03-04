@@ -24,9 +24,55 @@ function formatEventTime(iso: string): string {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
+// ── Priest display: fully booked & past (same 30 min + 15 buffer as parishioner booking) ─
+const MEETING_DURATION_MIN = 30
+const SLOT_STEP_MIN = 45
+
+function toMin(t: string): number {
+  const [h, m] = t.split(':').map(Number)
+  return h * 60 + m
+}
+function toStr(min: number): string {
+  return `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`
+}
+
+interface ActiveBookingRow {
+  availability_slot_id: string
+  requested_start_time: string | null
+  requested_end_time: string | null
+}
+
+function getAvailableStartTimesForSlot(slot: AvailabilitySlot, bookingsForSlot: ActiveBookingRow[]): string[] {
+  const slotStart = toMin(slot.start_time)
+  const slotEnd = toMin(slot.end_time)
+  if (slotEnd - slotStart < MEETING_DURATION_MIN) return []
+
+  const valid: string[] = []
+  let current = slotStart
+  while (current + MEETING_DURATION_MIN <= slotEnd) {
+    valid.push(toStr(current))
+    current += SLOT_STEP_MIN
+  }
+  const blocked = bookingsForSlot
+    .filter(b => b.requested_start_time && b.requested_end_time)
+    .map(b => ({ start: toMin(b.requested_start_time!), end: toMin(b.requested_end_time!) }))
+  return valid.filter(tStr => {
+    const tMin = toMin(tStr)
+    const meetingEnd = tMin + MEETING_DURATION_MIN
+    const overlaps = blocked.some(r => tMin < r.end && meetingEnd > r.start)
+    return !overlaps
+  })
+}
+
+function isSlotPast(slot: AvailabilitySlot): boolean {
+  const endLocal = new Date(`${slot.date}T${slot.end_time}:00`)
+  return endLocal.getTime() < Date.now()
+}
+
 export default function AvailabilitySlots() {
   const { userProfile } = useAuth()
   const [slots, setSlots] = useState<AvailabilitySlot[]>([])
+  const [activeBookings, setActiveBookings] = useState<ActiveBookingRow[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -53,13 +99,22 @@ export default function AvailabilitySlots() {
     try {
       setLoading(true)
       setFetchError(null)
-      const { data, error } = await supabase
-        .from('availability_slots')
-        .select('*')
-        .order('date', { ascending: true })
-        .order('start_time', { ascending: true })
-      if (error) throw error
-      setSlots(data || [])
+      const [{ data: slotsData, error: slotsErr }, { data: bookData, error: bookErr }] = await Promise.all([
+        supabase
+          .from('availability_slots')
+          .select('*')
+          .order('date', { ascending: true })
+          .order('start_time', { ascending: true }),
+        supabase
+          .from('bookings')
+          .select('availability_slot_id, requested_start_time, requested_end_time')
+          .in('status', ['PENDING', 'CONFIRMED']),
+      ])
+      if (slotsErr) throw slotsErr
+      if (bookErr) throw bookErr
+      // Only show current/future availabilities; past ones stay in DB for completed meetings
+      setSlots((slotsData || []).filter(slot => !isSlotPast(slot)))
+      setActiveBookings(bookData || [])
     } catch (err) {
       console.error('Greška pri dohvatu termina:', err)
       setFetchError('Nije moguće učitati termine.')
@@ -265,50 +320,58 @@ export default function AvailabilitySlots() {
           </div>
         ) : (
           <div className="space-y-3">
-            {slots.map((slot) => (
-              <div
-                key={slot.id}
-                className={`bg-white rounded-2xl border border-slate-200 px-4 sm:px-5 py-3.5 sm:py-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] ${!slot.is_active ? 'opacity-60' : ''}`}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-                <div className="min-w-0">
-                  <p className="text-[14px] sm:text-[15px] font-semibold text-slate-800 capitalize">
-                    {formatSlotDate(slot.date)}
-                  </p>
-                  <p className="text-[13px] text-slate-400 mt-0.5">
-                    {slot.start_time} – {slot.end_time}
-                  </p>
-                  <span
-                    className={`inline-block mt-2 px-2.5 py-1 rounded-lg text-[12px] font-medium border ${
-                      slot.is_active
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                        : 'bg-slate-100 text-slate-500 border-slate-200'
-                    }`}
-                  >
-                    {slot.is_active ? 'Aktivan' : 'Neaktivan'}
-                  </span>
+            {slots.map((slot) => {
+              const bookingsForSlot = activeBookings.filter(b => b.availability_slot_id === slot.id)
+              const availableCount = getAvailableStartTimesForSlot(slot, bookingsForSlot).length
+              const isFullyBooked = slot.is_active && availableCount === 0
+
+              return (
+                <div
+                  key={slot.id}
+                  className={`bg-white rounded-2xl border border-slate-200 px-4 sm:px-5 py-3.5 sm:py-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] ${!slot.is_active ? 'opacity-60' : ''}`}
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                    <div className="min-w-0">
+                      <p className="text-[14px] sm:text-[15px] font-semibold text-slate-800 capitalize">
+                        {formatSlotDate(slot.date)}
+                      </p>
+                      <p className="text-[13px] text-slate-400 mt-0.5">
+                        {slot.start_time} – {slot.end_time}
+                      </p>
+                      <span
+                        className={`inline-block mt-2 px-2.5 py-1 rounded-lg text-[12px] font-medium border ${
+                          isFullyBooked
+                            ? 'bg-amber-50 text-amber-700 border-amber-200'
+                            : slot.is_active
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : 'bg-slate-100 text-slate-500 border-slate-200'
+                        }`}
+                      >
+                        {isFullyBooked ? 'Popunjeno' : slot.is_active ? 'Aktivan' : 'Neaktivan'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => toggleActive(slot.id, slot.is_active)}
+                        className={`px-4 py-2 text-[13px] font-medium rounded-xl transition-colors ${
+                          slot.is_active
+                            ? 'text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200'
+                            : 'text-white bg-emerald-600 hover:bg-emerald-700'
+                        }`}
+                      >
+                        {slot.is_active ? 'Deaktiviraj' : 'Aktiviraj'}
+                      </button>
+                      <button
+                        onClick={() => { setConfirmDeleteSlotId(slot.id); setDeleteSlotError(null) }}
+                        className="px-4 py-2 text-[13px] font-medium text-red-500 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl transition-colors"
+                      >
+                        Obriši
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={() => toggleActive(slot.id, slot.is_active)}
-                    className={`px-4 py-2 text-[13px] font-medium rounded-xl transition-colors ${
-                      slot.is_active
-                        ? 'text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200'
-                        : 'text-white bg-emerald-600 hover:bg-emerald-700'
-                    }`}
-                  >
-                    {slot.is_active ? 'Deaktiviraj' : 'Aktiviraj'}
-                  </button>
-                  <button
-                    onClick={() => { setConfirmDeleteSlotId(slot.id); setDeleteSlotError(null) }}
-                    className="px-4 py-2 text-[13px] font-medium text-red-500 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl transition-colors"
-                  >
-                    Obriši
-                  </button>
-                </div>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>

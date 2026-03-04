@@ -65,8 +65,15 @@ function getAvailableStartTimesForSlot(slot: AvailabilitySlot, bookingsForSlot: 
 }
 
 function isSlotPast(slot: AvailabilitySlot): boolean {
-  const endLocal = new Date(`${slot.date}T${slot.end_time}:00`)
-  return endLocal.getTime() < Date.now()
+  const now = new Date()
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  if (slot.date < todayStr) return true
+  if (slot.date > todayStr) return false
+  const endTime = (slot.end_time || '').slice(0, 5)
+  if (!endTime || endTime.length < 5) return false
+  const endLocal = new Date(`${slot.date}T${endTime}:00`)
+  if (Number.isNaN(endLocal.getTime())) return false
+  return endLocal.getTime() <= Date.now()
 }
 
 export default function AvailabilitySlots() {

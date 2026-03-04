@@ -75,11 +75,14 @@ function getAvailableStartTimes(
     .filter(b => b.requested_start_time && b.requested_end_time)
     .map(b => ({ start: toMin(b.requested_start_time!), end: toMin(b.requested_end_time!) }))
 
+  const now = Date.now()
   return valid.filter(tStr => {
     const tMin = toMin(tStr)
     const meetingEnd = tMin + MEETING_DURATION_MIN
-    const overlaps = blocked.some(r => tMin < r.end && meetingEnd > r.start)
-    return !overlaps
+    if (blocked.some(r => tMin < r.end && meetingEnd > r.start)) return false
+    // Never allow booking a start time that has already passed
+    const startMs = new Date(`${slot.date}T${tStr}:00`).getTime()
+    return startMs > now
   })
 }
 

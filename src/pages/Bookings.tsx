@@ -544,8 +544,9 @@ export default function Bookings() {
       // ── 2. Create calendar event when CONFIRMED ────────────
       // booking_id is stored so we can reliably find this event later.
       if (newStatus === 'CONFIRMED' && userProfile && booking) {
-        const slot = booking.availability_slot
-        if (slot && booking.requested_start_time && booking.requested_end_time) {
+        const slotRaw = booking.availability_slot
+        const slot = slotRaw != null ? (Array.isArray(slotRaw) ? slotRaw[0] : slotRaw) : null
+        if (slot && slot.date && booking.requested_start_time && booking.requested_end_time) {
           // Guard: don't create a duplicate if one already exists
           const { data: existing } = await supabase
             .from('events')

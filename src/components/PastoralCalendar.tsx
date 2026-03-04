@@ -79,15 +79,17 @@ export default function PastoralCalendar({ currentMonth, onMonthChange, onEvents
       setFetchError(null)
       const year = currentMonth.getFullYear()
       const month = currentMonth.getMonth()
-      const startDate = new Date(year, month, 1)
-      const endDate = new Date(year, month + 1, 0)
+      // Use local date strings so month boundaries include all events (avoid UTC shift excluding events)
+      const startStr = `${year}-${String(month + 1).padStart(2, '0')}-01`
+      const lastDay = new Date(year, month + 1, 0).getDate()
+      const endStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
 
       const { data, error } = await supabase
         .from('events')
         .select('*')
         .eq('is_deleted', false)
-        .gte('start_time', startDate.toISOString().split('T')[0])
-        .lte('start_time', endDate.toISOString().split('T')[0] + 'T23:59:59')
+        .gte('start_time', startStr)
+        .lte('start_time', endStr + 'T23:59:59.999')
         .order('start_time', { ascending: true })
 
       if (error) throw error

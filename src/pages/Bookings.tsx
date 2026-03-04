@@ -644,14 +644,17 @@ export default function Bookings() {
           console.log(`[Bookings] ${fn} result:`, data)
         }
       }
-      // Only notify priest when parishioner cancels a CONFIRMED meeting (agreed appointment)
+      if (newStatus === 'CONFIRMED' && isPriest) {
+        supabase.functions
+          .invoke('notify-parishioner-confirmation', { body: { bookingId } })
+          .then(({ error: fnErr, data }) => logFnError('notify-parishioner-confirmation', fnErr, data))
+      }
       if (newStatus === 'CANCELLED' && !isPriest && wasConfirmed) {
         supabase.functions
           .invoke('notify-priest-cancellation', { body: { bookingId } })
           .then(({ error: fnErr, data }) => logFnError('notify-priest-cancellation', fnErr, data))
       }
       if (newStatus === 'CANCELLED' && isPriest && wasConfirmed) {
-        console.log('[Bookings] Invoking notify-parishioner-cancellation for booking', bookingId)
         supabase.functions
           .invoke('notify-parishioner-cancellation', { body: { bookingId } })
           .then(({ error: fnErr, data }) => logFnError('notify-parishioner-cancellation', fnErr, data))

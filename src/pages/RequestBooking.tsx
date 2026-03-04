@@ -38,42 +38,49 @@ function toStr(min: number): string {
   return `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`
 }
 
-// ── Smart slot logic ────────────────────────────────────────
+// ── Smart slot logic (conversation: 30 min meeting + 15 min buffer) ─
+const MEETING_DURATION_MIN = 30
+const BUFFER_AFTER_MEETING_MIN = 15
+const SLOT_STEP_MIN = MEETING_DURATION_MIN + BUFFER_AFTER_MEETING_MIN // 45
+
 interface ActiveBookingTime {
   availability_slot_id: string
   requested_start_time: string | null
   requested_end_time:   string | null
 }
 
-const DURATION_OPTIONS = [30, 60, 90, 120]
-
 /**
- * For a given availability window and its existing bookings,
- * returns all valid start times (every 30 min) for the requested duration.
- * A start time is valid when [t, t+duration] fits within the window
- * without overlapping any existing PENDING/CONFIRMED booking.
+ * For a given availability window, returns valid start times for 30-minute
+ * conversation bookings. Each meeting is 30 min followed by a mandatory 15-min
+ * break (not bookable). So valid slots are at start, start+45, start+90, ...
+ * only where slot_start + 30 <= availability.end. Then filters out any that
+ * overlap existing PENDING/CONFIRMED bookings.
  */
 function getAvailableStartTimes(
   slot: AvailabilitySlot,
   bookingsForSlot: ActiveBookingTime[],
-  durationMin: number,
 ): string[] {
   const slotStart = toMin(slot.start_time)
   const slotEnd   = toMin(slot.end_time)
-  if (slotEnd - slotStart < durationMin) return []
+  if (slotEnd - slotStart < MEETING_DURATION_MIN) return []
 
-  // Build list of blocked ranges from existing bookings
+  const valid: string[] = []
+  let current = slotStart
+  while (current + MEETING_DURATION_MIN <= slotEnd) {
+    valid.push(toStr(current))
+    current += SLOT_STEP_MIN
+  }
+
   const blocked = bookingsForSlot
     .filter(b => b.requested_start_time && b.requested_end_time)
     .map(b => ({ start: toMin(b.requested_start_time!), end: toMin(b.requested_end_time!) }))
 
-  const valid: string[] = []
-  for (let t = slotStart; t + durationMin <= slotEnd; t += 30) {
-    const candidateEnd = t + durationMin
-    const overlaps = blocked.some(r => t < r.end && candidateEnd > r.start)
-    if (!overlaps) valid.push(toStr(t))
-  }
-  return valid
+  return valid.filter(tStr => {
+    const tMin = toMin(tStr)
+    const meetingEnd = tMin + MEETING_DURATION_MIN
+    const overlaps = blocked.some(r => tMin < r.end && meetingEnd > r.start)
+    return !overlaps
+  })
 }
 
 // ── Component ───────────────────────────────────────────────
@@ -85,9 +92,8 @@ export default function RequestBooking() {
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
 
-  // Modal
+  // Modal (conversation duration is fixed at 30 min)
   const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(null)
-  const [duration, setDuration] = useState(60)
   const [startTime, setStartTime] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -131,7 +137,6 @@ export default function RequestBooking() {
 
   function openModal(slot: AvailabilitySlot) {
     setSelectedSlot(slot)
-    setDuration(60)
     setStartTime('')
     setFirstName('')
     setLastName('')
@@ -151,18 +156,16 @@ export default function RequestBooking() {
     [activeBookings, selectedSlot],
   )
 
-  // Recompute valid start times when slot or duration changes
   const availableStartTimes = useMemo(
-    () => selectedSlot ? getAvailableStartTimes(selectedSlot, bookingsForSlot, duration) : [],
-    [selectedSlot, bookingsForSlot, duration],
+    () => selectedSlot ? getAvailableStartTimes(selectedSlot, bookingsForSlot) : [],
+    [selectedSlot, bookingsForSlot],
   )
 
-  // Auto-select first valid time whenever duration or slot changes
   useEffect(() => {
     setStartTime(availableStartTimes[0] ?? '')
   }, [availableStartTimes])
 
-  const endTime = startTime ? toStr(toMin(startTime) + duration) : ''
+  const endTime = startTime ? toStr(toMin(startTime) + MEETING_DURATION_MIN) : ''
 
   const canSubmit =
     !submitting &&
@@ -206,7 +209,7 @@ export default function RequestBooking() {
           purpose:                reason.trim(),
           requested_start_time:   startTime,
           requested_end_time:     endTime,
-          duration_minutes:       duration,
+          duration_minutes:       MEETING_DURATION_MIN,
           status:                 'PENDING',
         })
         .select('id')
@@ -309,7 +312,7 @@ export default function RequestBooking() {
             {slots.map((slot) => {
               // Compute if slot has any free 30-min window (for at least 30 min duration)
               const slotBookings = activeBookings.filter(b => b.availability_slot_id === slot.id)
-              const hasAnyFreeTime = getAvailableStartTimes(slot, slotBookings, 30).length > 0
+              const hasAnyFreeTime = getAvailableStartTimes(slot, slotBookings).length > 0
               const totalMin = toMin(slot.end_time) - toMin(slot.start_time)
 
               return (
@@ -378,43 +381,14 @@ export default function RequestBooking() {
                 </div>
               )}
 
-              {/* ── Duration picker ── */}
-              <div>
-                <label className="block text-[12px] font-semibold text-slate-500 mb-2 uppercase tracking-wide">
-                  Trajanje susreta
-                </label>
-                <div className="flex gap-2 flex-wrap">
-                  {DURATION_OPTIONS.map(d => {
-                    const avail = getAvailableStartTimes(selectedSlot, bookingsForSlot, d)
-                    const hasTime = avail.length > 0
-                    return (
-                      <button
-                        key={d}
-                        onClick={() => { setDuration(d) }}
-                        disabled={!hasTime}
-                        className={`px-4 py-2 rounded-xl text-[13px] font-medium border transition-all ${
-                          duration === d
-                            ? 'bg-indigo-600 text-white border-indigo-600'
-                            : hasTime
-                              ? 'bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50'
-                              : 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed'
-                        }`}
-                      >
-                        {d} min
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* ── Start time picker ── */}
+              {/* Start time picker (each meeting is 30 min; 15-min buffer after each) */}
               <div>
                 <label className="block text-[12px] font-semibold text-slate-500 mb-2 uppercase tracking-wide">
                   Početak susreta
                 </label>
                 {availableStartTimes.length === 0 ? (
                   <div className="px-4 py-3 bg-amber-50 border border-amber-100 rounded-xl text-[13px] text-amber-700">
-                    Nema slobodnih termina za odabrano trajanje. Odaberite kraće trajanje.
+                    Nema slobodnih termina (susret 30 min).
                   </div>
                 ) : (
                   <div className="flex gap-2 flex-wrap">
@@ -442,7 +416,7 @@ export default function RequestBooking() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   Susret: <strong>{startTime} – {endTime}</strong>
-                  <span className="text-slate-400 ml-1">({duration} min)</span>
+                  <span className="text-slate-400 ml-1">(30 min)</span>
                 </div>
               )}
 

@@ -49,6 +49,12 @@ interface ActiveBookingTime {
   requested_end_time:   string | null
 }
 
+/** True when this availability block's end time has already passed (hide from list; no DB delete). */
+function isAvailabilityPast(slot: AvailabilitySlot): boolean {
+  const endLocal = new Date(`${slot.date}T${slot.end_time}:00`)
+  return endLocal.getTime() < Date.now()
+}
+
 /**
  * For a given availability window, returns valid start times for 30-minute
  * conversation bookings. Each meeting is 30 min followed by a mandatory 15-min
@@ -129,7 +135,8 @@ export default function RequestBooking() {
       ])
       if (sErr) throw sErr
       if (bErr) throw bErr
-      setSlots(slotsData || [])
+      // Hide past availability blocks from list (dostupnost); meeting/booking data stays in DB
+      setSlots((slotsData || []).filter(slot => !isAvailabilityPast(slot)))
       setActiveBookings(bookData || [])
     } catch (err) {
       setFetchError('Nije moguće učitati slobodne termine.')
